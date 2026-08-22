@@ -79,6 +79,10 @@ export const vendorAPI = {
     const response = await api.get(`/vendors/recommendations/${prId}`);
     return response.data;
   },
+  negotiate: async (prId) => {
+    const response = await api.post(`/vendors/negotiate/${prId}`);
+    return response.data;
+  },
 };
 
 // --- APPROVALS & POS API ---
@@ -107,6 +111,10 @@ export const approvalsAPI = {
   },
   getAllPOs: async () => {
     const response = await api.get('/approvals/pos');
+    return response.data;
+  },
+  getNetSuiteSync: async (poNumber) => {
+    const response = await api.get(`/approvals/po/${poNumber}/netsuite-sync`);
     return response.data;
   },
   getDownloadUrl: (poNumber) => `${API_BASE_URL}/approvals/po/${poNumber}/download`,
