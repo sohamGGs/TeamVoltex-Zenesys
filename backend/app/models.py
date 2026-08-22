@@ -40,6 +40,9 @@ class Vendor(Base):
     pricing_tier = Column(String(50), nullable=False)  # Enterprise Tier-1 | Mid-Tier | Economy Tier
     specialties = Column(Text, nullable=True)
     status = Column(String(50), default="Active", nullable=False)
+    is_local_vendor = Column(Boolean, default=False, nullable=True)
+    is_incubator = Column(Boolean, default=False, nullable=True)
+    local_proximity_km = Column(Float, default=15.0, nullable=True)
 
     # Relationships
     bids = relationship("VendorBid", back_populates="vendor", cascade="all, delete-orphan")
@@ -58,7 +61,7 @@ class PurchaseRequest(Base):
     status = Column(String(50), default="Pending Approval", nullable=False)  # Pending | Pending Approval | Approved | Rejected | PO Created
     requester_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     department = Column(String(100), nullable=False)
-    estimated_budget = Column(Float, nullable=False)
+    estimated_budget = Column(Float, default=0.0, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     # Relationships
@@ -115,6 +118,10 @@ class PurchaseOrder(Base):
     total_amount = Column(Float, nullable=False)
     status = Column(String(50), default="Sent", nullable=False)  # Sent | Acknowledged | Delivered
     pdf_url = Column(String(255), nullable=False)
+    netsuite_internal_id = Column(String(50), default="NS-REC-10482", nullable=True)
+    netsuite_sync_status = Column(String(50), default="Synced (SuiteTalk REST)", nullable=True)
+    netsuite_subsidiary = Column(String(100), default="TechCorp Americas (Sub 01)", nullable=True)
+    netsuite_gl_account = Column(String(100), default="6010 - Direct Sourcing & Material CapEx", nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
 
     # Relationships

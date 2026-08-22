@@ -56,6 +56,9 @@ class VendorBase(BaseModel):
     pricing_tier: str
     specialties: Optional[str] = None
     status: str = "Active"
+    is_local_vendor: Optional[bool] = False
+    is_incubator: Optional[bool] = False
+    local_proximity_km: Optional[float] = 15.0
 
 
 class VendorOut(VendorBase):
@@ -72,6 +75,7 @@ class ScoreBreakdown(BaseModel):
     history_score: float
     total_score: float
     price_variance_pct: float
+    nearshoring_bonus: Optional[float] = 0.0
 
 
 class VendorBidOut(BaseModel):
@@ -106,6 +110,9 @@ class VendorRecommendation(BaseModel):
     notes: Optional[str] = None
     scores: ScoreBreakdown
     rank: int
+    is_local_vendor: Optional[bool] = False
+    is_incubator: Optional[bool] = False
+    local_proximity_km: Optional[float] = 15.0
     negotiation_transcript: Optional[List[Dict[str, Any]]] = None
 
 
@@ -188,9 +195,26 @@ class PurchaseOrderOut(BaseModel):
     total_amount: float
     status: str
     pdf_url: str
+    netsuite_internal_id: Optional[str] = "NS-REC-10482"
+    netsuite_sync_status: Optional[str] = "Synced (SuiteTalk REST)"
+    netsuite_subsidiary: Optional[str] = "TechCorp Americas (Sub 01)"
+    netsuite_gl_account: Optional[str] = "6010 - Direct Sourcing & Material CapEx"
     created_at: datetime.datetime
     vendor: Optional[VendorOut] = None
     model_config = ConfigDict(from_attributes=True)
+
+
+class NetSuiteSyncResponse(BaseModel):
+    po_id: int
+    po_number: str
+    netsuite_internal_id: str
+    sync_status: str
+    subsidiary: str
+    gl_account: str
+    currency: str = "USD"
+    three_way_match_status: str
+    suitetalk_rest_payload: Dict[str, Any]
+    last_synced_at: datetime.datetime
 
 
 class PurchaseOrderStatusUpdate(BaseModel):
