@@ -41,7 +41,10 @@ def auto_generate_rfq_bids(pr: models.PurchaseRequest, db: Session):
 
     for vendor in vendors:
         # Tier-based price multiplier
-        if vendor.pricing_tier == "Enterprise Tier-1":
+        if getattr(vendor, "is_incubator", False) or getattr(vendor, "is_local_vendor", False):
+            multiplier = random.uniform(0.72, 0.88)
+            spec_note = f"🌱 Local Incubator SMB ({getattr(vendor, 'local_proximity_km', 12.0)}km proximity). ISO-9001 local fabrication with same-day emergency dispatch and zero cross-country freight delay."
+        elif vendor.pricing_tier == "Enterprise Tier-1":
             multiplier = random.uniform(0.92, 1.06)
             spec_note = f"Enterprise Tier-1 SLA. ISO-9001 certified batch testing included. Direct factory delivery."
         elif vendor.pricing_tier == "Mid-Tier":
