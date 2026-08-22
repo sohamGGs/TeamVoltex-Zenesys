@@ -11,8 +11,11 @@ import {
   Layers,
   ArrowRight,
   ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
   Zap,
-  Info
+  Info,
+  FileText
 } from 'lucide-react';
 import { prAPI } from '../api';
 
@@ -41,37 +44,41 @@ const PRESETS = [
     dept: 'Operations',
     urgency: 'High',
     budget: 135000,
-    badge: 'Routes to Plant Head'
+    badge: 'Routes to Plant Head',
+    policyTag: 'Compliant'
   },
   {
     name: 'Rule 2: Critical Urgency & Bulk > 500',
     title: 'Emergency Hydraulic High-Pressure Seals & Valve Packs',
-    desc: 'Critical emergency overhaul kit for plant stamping presses to prevent catastrophic line downtime.',
+    desc: 'Critical emergency overhaul kit for plant stamping presses to prevent catastrophic line downtime during peak shift.',
     qty: 600,
     dept: 'Operations',
     urgency: 'Critical',
     budget: 72000,
-    badge: 'Routes to VP Operations'
+    badge: 'Routes to VP Operations',
+    policyTag: 'Compliant'
   },
   {
-    name: 'Rule 3: High Value > $50,000',
-    title: 'Enterprise SAN Storage Array & High-Density Compute Blades',
-    desc: 'Next-generation NVMe storage arrays and redundant fibre switches for NetSuite ERP cloud migration.',
-    qty: 12,
+    name: 'Policy Test: Spend Cap Violation ($185k)',
+    title: 'Plant-Wide Smart Factory Automation & Robotic Palletizer Unit',
+    desc: 'Automated high-capacity robotic palletizer cell for central warehouse distribution hub.',
+    qty: 1,
+    dept: 'Operations',
+    urgency: 'High',
+    budget: 185000,
+    badge: 'Exceeds $150k Cap',
+    policyTag: 'Spend Cap Alert'
+  },
+  {
+    name: 'Policy Test: Recurring Renewal Disclosure',
+    title: 'Enterprise ERP Cloud Infrastructure & Multi-Region Database Subscription',
+    desc: 'Annual recurring subscription for high-availability enterprise database hosting and disaster recovery nodes.',
+    qty: 1,
     dept: 'IT',
     urgency: 'Medium',
-    budget: 88000,
-    badge: 'Routes to Finance Director'
-  },
-  {
-    name: 'Rule 4: Standard Departmental PR',
-    title: 'Semi-Annual Precision CNC Tooling & Laser Calibration Sensor',
-    desc: 'Sub-micron calibration heads and specialized CNC replacement tooling for manufacturing shop floor.',
-    qty: 4,
-    dept: 'Manufacturing',
-    urgency: 'Medium',
-    budget: 24500,
-    badge: 'Routes to Department Manager'
+    budget: 48000,
+    badge: 'Renewal Clause Needed',
+    policyTag: 'Disclosure Alert'
   }
 ];
 
@@ -170,7 +177,7 @@ export default function PurchaseRequestForm({ onPrCreated }) {
           Create Purchase Request (PR)
         </h1>
         <p className="text-slate-400 text-xs md:text-sm mt-1">
-          Initiate demand specification. ProcureIQ will auto-generate RFQ bids across 8 qualified suppliers and dynamically route for multi-tier approval.
+          Initiate demand specification. ProcureIQ will auto-generate RFQ bids, evaluate autonomous RAG policy compliance against company bylaws, and dynamically route for multi-tier approval.
         </p>
       </div>
 
@@ -180,7 +187,7 @@ export default function PurchaseRequestForm({ onPrCreated }) {
           <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
             <Zap className="w-4 h-4 text-amber-400" /> Quick-Fill Demo Scenarios (1-Click)
           </span>
-          <span className="text-[11px] text-slate-400">Click a scenario to test specific routing rules</span>
+          <span className="text-[11px] text-slate-400">Click a scenario to test specific routing &amp; compliance rules</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -197,8 +204,12 @@ export default function PurchaseRequestForm({ onPrCreated }) {
               <div className="text-slate-400 text-[11px] line-clamp-2">{preset.title}</div>
               <div className="pt-1 flex items-center justify-between text-[10px]">
                 <span className="text-emerald-400 font-mono font-semibold">${preset.budget.toLocaleString()}</span>
-                <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
-                  {preset.badge}
+                <span className={`px-1.5 py-0.5 rounded font-medium border ${
+                  preset.policyTag === 'Compliant'
+                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                    : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                }`}>
+                  {preset.policyTag}
                 </span>
               </div>
             </button>
@@ -206,18 +217,22 @@ export default function PurchaseRequestForm({ onPrCreated }) {
         </div>
       </div>
 
-      {/* Success Modal / Banner */}
+      {/* Success Modal / Compliance Banner */}
       {successData && (
-        <div className="glass-card rounded-2xl p-6 border-emerald-500/40 bg-emerald-950/20 space-y-4 animate-fade-in">
+        <div className="glass-card rounded-2xl p-6 border-blue-500/40 bg-slate-900/90 space-y-5 animate-fade-in shadow-2xl">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <div className="p-3 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div className="space-y-1 flex-1">
-              <h3 className="text-lg font-bold text-white">Purchase Request Initiated Successfully!</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-bold text-white">Purchase Request Initiated Successfully!</h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-mono text-xs font-bold">
+                  PR-{successData.id.toString().padStart(4, '0')}
+                </span>
+              </div>
               <p className="text-xs text-slate-300">
-                <span className="font-mono text-emerald-300 font-semibold">PR-{successData.id.toString().padStart(4, '0')}</span> has been created.
-                RFQ bids have been automatically broadcast to suppliers and the approval workflow is active.
+                RFQ bids have been broadcast to 8 qualified suppliers and the approval workflow is active.
               </p>
               <div className="pt-2 flex flex-wrap gap-2 text-xs">
                 <span className="px-2.5 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-300">
@@ -232,6 +247,73 @@ export default function PurchaseRequestForm({ onPrCreated }) {
               </div>
             </div>
           </div>
+
+          {/* Autonomous RAG Compliance Result Panel */}
+          {successData.compliance && (
+            <div className={`p-4 rounded-xl border ${
+              successData.compliance.compliant
+                ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200'
+                : 'bg-amber-950/30 border-amber-500/40 text-amber-200'
+            } space-y-3`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {successData.compliance.compliant ? (
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  ) : (
+                    <ShieldAlert className="w-5 h-5 text-amber-400" />
+                  )}
+                  <span className="text-sm font-bold text-white">
+                    {successData.compliance.compliant
+                      ? 'Autonomous Policy Compliance Guard: Verified Compliant'
+                      : `Autonomous Policy Compliance Alert: Non-Compliant (${successData.compliance.violations?.length || 1} Violations)`}
+                  </span>
+                </div>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                  successData.compliance.compliant
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                }`}>
+                  {successData.compliance.compliant ? 'All 5 Policies Met' : 'Flagged for Review'}
+                </span>
+              </div>
+
+              {successData.compliance.compliant ? (
+                <p className="text-xs text-slate-300">
+                  This request was automatically evaluated against company procurement bylaws via ChromaDB semantic vector search and verified compliant. No policy deviations or spend cap anomalies detected.
+                </p>
+              ) : (
+                <div className="space-y-2 pt-1">
+                  <div className="space-y-1.5">
+                    {successData.compliance.violations?.map((v, i) => (
+                      <div key={i} className="p-2.5 rounded-lg bg-slate-900/80 border border-amber-500/30 text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            {v.rule_name}
+                          </span>
+                          <span className={`text-[10px] font-semibold px-2 py-0.2 rounded ${
+                            v.severity === 'High'
+                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          }`}>
+                            {v.severity} Severity
+                          </span>
+                        </div>
+                        <p className="text-slate-300 text-[11px]">{v.explanation}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {successData.compliance.required_action && (
+                    <div className="p-2.5 rounded-lg bg-blue-950/40 border border-blue-500/30 text-xs text-blue-200">
+                      <strong className="text-white">Required Remediation Action: </strong>
+                      {successData.compliance.required_action}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -250,7 +332,7 @@ export default function PurchaseRequestForm({ onPrCreated }) {
               onClick={() => onPrCreated(successData.id)}
               className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-blue-500/20 cursor-pointer"
             >
-              View Vendor Bids & AI Audit <ArrowRight className="w-4 h-4" />
+              View Vendor Bids &amp; AI Audit <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
