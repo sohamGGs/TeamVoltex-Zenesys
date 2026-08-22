@@ -6,7 +6,6 @@ import {
   XCircle,
   ShieldCheck,
   ShieldAlert,
-  ArrowRight,
   Sparkles,
   Building,
   DollarSign,
@@ -14,8 +13,7 @@ import {
   MessageSquare,
   FileText,
   AlertTriangle,
-  Award,
-  Filter
+  Award
 } from 'lucide-react';
 import { approvalsAPI } from '../api';
 
@@ -92,54 +90,54 @@ export default function ApprovalQueue({
   const getRuleBadge = (rule) => {
     const r = String(rule || '');
     if (r.includes('Rule 1')) {
-      return { label: 'Rule 1: Plant Head CapEx ($100k+)', color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' };
+      return { label: 'Rule 1: Plant Head CapEx ($100k+)', color: 'bg-slate-100 text-slate-700 border-slate-200 font-mono text-[9px] uppercase font-medium' };
     } else if (r.includes('Rule 2')) {
-      return { label: 'Rule 2: VP Ops Critical Urgency (>500)', color: 'bg-amber-500/15 text-amber-300 border-amber-500/30' };
+      return { label: 'Rule 2: VP Ops Critical (>500)', color: 'bg-slate-100 text-slate-700 border-slate-200 font-mono text-[9px] uppercase font-medium' };
     } else if (r.includes('Rule 3')) {
-      return { label: 'Rule 3: Finance Director (> $50k)', color: 'bg-purple-500/15 text-purple-300 border-purple-500/30' };
+      return { label: 'Rule 3: Finance Director (> $50k)', color: 'bg-slate-100 text-slate-700 border-slate-200 font-mono text-[9px] uppercase font-medium' };
     } else {
-      return { label: 'Rule 4: Department Manager Standard', color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' };
+      return { label: 'Rule 4: Department Manager Standard', color: 'bg-slate-100 text-slate-600 border-slate-200 font-mono text-[9px] uppercase font-medium' };
     }
   };
 
   const getStatusPill = (status) => {
     switch (status) {
       case 'Approved':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] uppercase font-semibold';
       case 'Rejected':
-        return 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+        return 'bg-rose-50 text-rose-700 border-rose-200 font-mono text-[9px] uppercase font-semibold';
       default:
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+        return 'bg-amber-50 text-amber-700 border-amber-200 font-mono text-[9px] uppercase font-semibold';
     }
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#e8e6df] pb-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
-            <CheckSquare className="w-3.5 h-3.5" /> Governance &amp; Multi-Rule Routing
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-slate-500 font-bold block mb-1">
+            Governance &amp; Multi-Rule Routing
+          </span>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Executive Approval Queue
           </h1>
-          <p className="text-slate-400 text-xs md:text-sm mt-1">
+          <p className="text-slate-500 text-xs mt-0.5">
             Dynamic policy verification. Authorizing requests automatically compiles official NetSuite ReportLab Purchase Orders.
           </p>
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs self-start md:self-auto">
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-[#f3f2ec] border border-[#e8e6df] text-xs self-start md:self-auto font-mono">
           {['Pending', 'Approved', 'Rejected', 'All'].map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setStatusFilter(tab)}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md font-medium text-xs transition-colors cursor-pointer ${
                 statusFilter === tab
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-[#fbfbfa] text-slate-900 border border-[#d8d5ca] shadow-sm font-semibold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-[#e8e6df]/60'
               }`}
             >
               {tab}
@@ -149,39 +147,39 @@ export default function ApprovalQueue({
       </div>
 
       {/* Approver Persona Context Card */}
-      <div className="glass-card rounded-2xl p-4 md:p-5 flex items-center justify-between gap-4 border-slate-750">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-            <User className="w-5 h-5" />
+      <div className="enterprise-card p-3.5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-[#f3f2ec] border border-[#e8e6df] flex items-center justify-center text-slate-700">
+            <User className="w-3.5 h-3.5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400">Current Approver Authority:</div>
-            <div className="text-sm font-bold text-white flex items-center gap-2">
-              {user?.full_name || 'Executive User'}
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-semibold">
+            <div className="text-[9px] uppercase font-mono text-slate-500">Current Approver Authority</div>
+            <div className="text-xs font-semibold text-slate-900 flex items-center gap-2">
+              {user?.full_name || 'Priya Sharma'}
+              <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded bg-[#f3f2ec] text-slate-600 border border-[#e8e6df] font-medium">
                 {user?.role}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="text-xs text-slate-400 hidden sm:block">
-          Showing requests assigned to <strong className="text-slate-200">{user?.role}</strong> or full organization queue
+        <div className="text-[10px] font-mono text-slate-500 hidden sm:block">
+          Filtered for <strong className="text-slate-800">{user?.role}</strong> delegation
         </div>
       </div>
 
       {/* Queue Items */}
       {loading ? (
-        <div className="space-y-4 animate-pulse">
+        <div className="space-y-3 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-44 bg-slate-800/40 rounded-2xl border border-slate-750" />
+            <div key={i} className="h-40 bg-[#fbfbfa] rounded-xl border border-[#e8e6df] shadow-sm" />
           ))}
         </div>
       ) : queue.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-emerald-400/80 mx-auto" />
-          <h3 className="text-base font-bold text-white">No {statusFilter} Approvals in Queue</h3>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
+        <div className="enterprise-card p-10 text-center space-y-2">
+          <CheckCircle2 className="w-8 h-8 text-slate-400 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-900">No {statusFilter} Approvals in Queue</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto">
             All purchase requests matching your criteria have been processed in accordance with NetSuite ERP governance rules.
           </p>
         </div>
@@ -194,118 +192,118 @@ export default function ApprovalQueue({
             return (
               <div
                 key={wf.id}
-                className="glass-card rounded-2xl p-6 border-slate-750 space-y-4 transition-all hover:border-slate-650"
+                className="enterprise-card p-5 space-y-3.5 hover:border-[#d8d5ca] transition-colors"
               >
                 {/* Top Row: PR ID, Title, Rule, Status */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3.5">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm font-bold text-blue-400">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-[#e8e6df] pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-mono text-xs font-bold text-slate-900">
                       PR-{(wf.pr_id || 0).toString().padStart(4, '0')}
                     </span>
-                    <h3 className="text-base font-bold text-white">{wf.pr_title || 'Purchase Request'}</h3>
+                    <h3 className="text-sm font-semibold text-slate-900">{wf.pr_title || 'Purchase Request'}</h3>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Compliance Status Badge */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {/* Compliance Status Badge (Critical / High Signal) */}
                     {wf.compliance && (
-                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border flex items-center gap-1 ${
                         wf.compliance.compliant
-                          ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                          : 'bg-rose-500/15 text-rose-300 border-rose-500/30 animate-pulse'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
                       }`}>
                         {wf.compliance.compliant ? (
                           <>
-                            <ShieldCheck className="w-3 h-3 text-emerald-400" /> Compliant
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Compliant
                           </>
                         ) : (
                           <>
-                            <ShieldAlert className="w-3 h-3 text-rose-400" /> Policy Alert ({Array.isArray(wf.compliance.violations) ? wf.compliance.violations.length : 1})
+                            <ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Policy Alert ({Array.isArray(wf.compliance.violations) ? wf.compliance.violations.length : 1})
                           </>
                         )}
                       </span>
                     )}
 
-                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${ruleBadge.color}`}>
+                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded border ${ruleBadge.color}`}>
                       {ruleBadge.label}
                     </span>
-                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${getStatusPill(wf.status)}`}>
+                    <span className={`text-[9px] font-mono px-2 py-0.5 rounded border ${getStatusPill(wf.status)}`}>
                       {wf.status || 'Pending'}
                     </span>
                   </div>
                 </div>
 
                 {/* Middle Grid: PR Details & Supplier Bid Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
                   {/* Left PR Info */}
                   <div className="md:col-span-7 space-y-2 text-xs">
-                    <p className="text-slate-300 leading-relaxed">{wf.item_description || 'No description provided.'}</p>
+                    <p className="text-slate-600 leading-relaxed text-xs">{wf.item_description || 'No description provided.'}</p>
                     
-                    <div className="flex flex-wrap gap-4 text-slate-400 pt-1">
+                    <div className="flex flex-wrap gap-4 text-slate-500 pt-0.5">
                       <span className="flex items-center gap-1">
-                        <Building className="w-3.5 h-3.5 text-slate-500" /> Department: <strong className="text-slate-200">{wf.department || 'Operations'}</strong>
+                        <Building className="w-3.5 h-3.5 text-slate-400" /> Dept: <strong className="text-slate-800">{wf.department || 'Operations'}</strong>
                       </span>
                       <span className="flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-slate-500" /> Requester: <strong className="text-slate-200">{wf.requester?.full_name || 'Elena Vance'}</strong>
+                        <User className="w-3.5 h-3.5 text-slate-400" /> Requester: <strong className="text-slate-800">{wf.requester?.full_name || 'Priya Sharma'}</strong>
                       </span>
                       <span className="flex items-center gap-1">
-                        <DollarSign className="w-3.5 h-3.5 text-slate-500" /> Authorized Budget: <strong className="text-emerald-400 font-mono">${(wf.estimated_budget || 0).toLocaleString()}</strong>
+                        <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Budget: <strong className="text-emerald-700 font-mono">${(wf.estimated_budget || 0).toLocaleString()}</strong>
                       </span>
                     </div>
 
                     {/* Policy Compliance Warning Box if Non-Compliant */}
                     {wf.compliance && !wf.compliance.compliant && (
-                      <div className="mt-2 p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/40 text-xs space-y-1.5">
-                        <div className="font-bold text-rose-300 flex items-center gap-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <div className="mt-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs space-y-1">
+                        <div className="font-semibold text-rose-800 flex items-center gap-1 text-[11px]">
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                           RAG Policy Guard Alerts:
                         </div>
-                        <div className="space-y-1 pl-4">
+                        <div className="space-y-0.5 pl-4">
                           {(Array.isArray(wf.compliance.violations) ? wf.compliance.violations : []).map((v, idx) => (
-                            <div key={idx} className="text-[11px] text-slate-300">
-                              <strong className="text-rose-200">{v.rule_name || 'Policy Rule'} ({v.severity || 'Medium'}):</strong> {v.explanation || ''}
+                            <div key={idx} className="text-[11px] text-slate-700">
+                              <strong className="text-rose-800">{v.rule_name || 'Policy Rule'} ({v.severity || 'Medium'}):</strong> {v.explanation || ''}
                             </div>
                           ))}
                         </div>
                         {wf.compliance.required_action && (
-                          <div className="text-[11px] text-blue-300 pt-0.5 border-t border-rose-500/20">
-                            <strong>Remediation:</strong> {wf.compliance.required_action}
+                          <div className="text-[10px] text-blue-700 pt-0.5 border-t border-rose-200">
+                            <strong>Action:</strong> {wf.compliance.required_action}
                           </div>
                         )}
                       </div>
                     )}
 
                     {wf.comment && (
-                      <div className="mt-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 flex items-start gap-2">
-                        <MessageSquare className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                      <div className="mt-1.5 p-2 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] text-[11px] text-slate-600 flex items-start gap-2">
+                        <MessageSquare className="w-3 h-3 text-slate-400 shrink-0 mt-0.5" />
                         <span><strong>Remarks:</strong> {wf.comment}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Right: Recommended Supplier Bid Card */}
-                  <div className="md:col-span-5 p-4 rounded-xl bg-slate-900/80 border border-slate-750 space-y-2.5">
+                  <div className="md:col-span-5 p-3.5 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] space-y-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-medium flex items-center gap-1">
-                        <Award className="w-3.5 h-3.5 text-amber-400" /> Top Ranked Bidder:
+                      <span className="text-slate-500 text-[11px] font-medium flex items-center gap-1">
+                        <Award className="w-3.5 h-3.5 text-amber-500" /> Winning Bidder:
                       </span>
-                      <span className="text-emerald-400 font-bold font-mono">
+                      <span className="text-emerald-700 font-semibold font-mono text-xs">
                         Score: {wf.top_bid?.bid_score?.toFixed(1) || '95.0'}/100
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-bold text-white text-sm">{wf.top_bid?.vendor_name || 'Primary Supplier'}</div>
-                        <div className="text-[10px] text-slate-400">
-                          {wf.top_bid?.pricing_tier || 'Enterprise Tier-1'} • SLA: {wf.top_bid?.delivery_days || 3} Business Days
+                        <div className="font-semibold text-slate-900 text-xs">{wf.top_bid?.vendor_name || 'Primary Supplier'}</div>
+                        <div className="text-[10px] text-slate-500">
+                          {wf.top_bid?.pricing_tier || 'Enterprise Tier-1'} • SLA: {wf.top_bid?.delivery_days || 3}d
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-mono font-extrabold text-white">
+                        <div className="text-xs font-mono font-bold text-slate-900">
                           ${(wf.top_bid?.quoted_price || wf.estimated_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </div>
-                        <div className="text-[10px] text-emerald-400">
-                          Net Savings: ${Math.max(0, (wf.estimated_budget || 0) - (wf.top_bid?.quoted_price || wf.estimated_budget || 0)).toLocaleString()}
+                        <div className="text-[10px] text-emerald-700 font-mono font-medium">
+                          Savings: ${Math.max(0, (wf.estimated_budget || 0) - (wf.top_bid?.quoted_price || wf.estimated_budget || 0)).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -313,21 +311,21 @@ export default function ApprovalQueue({
                 </div>
 
                 {/* Bottom Row: Actions */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" /> Initiated on {wf.created_at ? new Date(wf.created_at).toLocaleDateString() : 'Recently'}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2.5 border-t border-[#e8e6df]">
+                  <div className="text-[10px] text-slate-500 flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> Submitted {wf.created_at ? new Date(wf.created_at).toLocaleDateString() : 'Recently'}
                   </div>
 
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => {
                         onSelectPrForComparison(wf.pr_id);
                         onNavigateToTab('vendor_comparison');
                       }}
-                      className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                      className="btn-secondary text-[11px] py-1 px-2.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-blue-400" /> Full Bids Matrix
+                      <Sparkles className="w-3 h-3 text-slate-400" /> Bids Matrix
                     </button>
 
                     {isPending && (
@@ -335,15 +333,15 @@ export default function ApprovalQueue({
                         <button
                           type="button"
                           onClick={() => setActionModal({ type: 'reject', item: wf })}
-                          className="px-3.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                          className="btn-danger text-[11px] py-1 px-2.5"
                         >
-                          <XCircle className="w-3.5 h-3.5" /> Reject
+                          <XCircle className="w-3 h-3" /> Reject
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setActionModal({ type: 'approve', item: wf })}
-                          className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-blue-500/20 cursor-pointer"
+                          className="btn-primary text-[11px] py-1 px-3"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" /> Authorize &amp; Issue PO
                         </button>
@@ -354,9 +352,9 @@ export default function ApprovalQueue({
                       <button
                         type="button"
                         onClick={() => onNavigateToTab('purchase_orders')}
-                        className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                        className="btn-secondary text-[11px] py-1 px-2.5 text-emerald-700 font-medium"
                       >
-                        <FileText className="w-3.5 h-3.5" /> View {wf.po_number || 'PO'}
+                        <FileText className="w-3 h-3" /> View {wf.po_number || 'PO'}
                       </button>
                     )}
                   </div>
@@ -369,18 +367,18 @@ export default function ApprovalQueue({
 
       {/* Action Modal (Authorize / Reject) */}
       {actionModal && actionModal.item && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-card rounded-2xl p-6 md:p-7 max-w-lg w-full space-y-5 border-slate-700 shadow-2xl animate-fade-in">
-            <div className="border-b border-slate-700/60 pb-3 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="enterprise-card p-5 md:p-6 max-w-lg w-full space-y-4 shadow-2xl animate-fade-in bg-[#fbfbfa] border border-[#e8e6df]">
+            <div className="border-b border-[#e8e6df] pb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 {actionModal.type === 'approve' ? (
                   <>
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     Authorize &amp; Compile NetSuite PO
                   </>
                 ) : (
                   <>
-                    <XCircle className="w-5 h-5 text-rose-400" />
+                    <XCircle className="w-4 h-4 text-rose-600" />
                     Reject Purchase Request
                   </>
                 )}
@@ -388,45 +386,45 @@ export default function ApprovalQueue({
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                <div className="font-bold text-white">{actionModal.item.pr_title || 'Purchase Request'}</div>
-                <div className="text-slate-400">
-                  Department: <strong className="text-slate-300">{actionModal.item.department || 'Operations'}</strong> • 
-                  Budget: <strong className="text-emerald-400 font-mono">${(actionModal.item.estimated_budget || 0).toLocaleString()}</strong>
+              <div className="p-3 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] space-y-1">
+                <div className="font-semibold text-slate-900 text-xs">{actionModal.item.pr_title || 'Purchase Request'}</div>
+                <div className="text-slate-500 text-[11px]">
+                  Department: <strong className="text-slate-800">{actionModal.item.department || 'Operations'}</strong> • 
+                  Budget: <strong className="text-emerald-700 font-mono">${(actionModal.item.estimated_budget || 0).toLocaleString()}</strong>
                 </div>
-                <div className="text-[11px] text-blue-400 font-semibold pt-1">
+                <div className="text-[10px] text-blue-600 pt-0.5 font-medium">
                   Policy: {actionModal.item.triggered_rule || 'Standard Policy'}
                 </div>
               </div>
 
               {actionModal.type === 'approve' && (
-                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs">
-                  Awarding to winning supplier <strong className="text-white">{actionModal.item.top_bid?.vendor_name || 'Primary Supplier'}</strong> at 
-                  <strong className="font-mono text-emerald-300"> ${(actionModal.item.top_bid?.quoted_price || actionModal.item.estimated_budget || 0).toLocaleString()}</strong>. 
+                <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-[11px] leading-relaxed">
+                  Awarding to winning supplier <strong className="text-slate-900">{actionModal.item.top_bid?.vendor_name || 'Primary Supplier'}</strong> at 
+                  <strong className="font-mono text-emerald-700"> ${(actionModal.item.top_bid?.quoted_price || actionModal.item.estimated_budget || 0).toLocaleString()}</strong>. 
                   A binding ReportLab PDF Purchase Order will be generated immediately.
                 </div>
               )}
 
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-300">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-slate-700">
                   {actionModal.type === 'approve' ? 'Approver Executive Remarks' : 'Reason for Rejection'}
                 </label>
                 <textarea
                   rows={3}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder={actionModal.type === 'approve' ? 'e.g. Approved. Verified against Q3 CapEx operational plan.' : 'e.g. Budget ceiling exceeded. Please revise specifications.'}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  placeholder={actionModal.type === 'approve' ? 'e.g. Approved. Verified against operational plan.' : 'e.g. Budget ceiling exceeded. Please revise.'}
+                  className="w-full bg-white border border-[#dcd9ce] rounded-lg p-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 shadow-sm"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 disabled={actionLoading}
                 onClick={() => setActionModal(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                className="btn-secondary text-xs"
               >
                 Cancel
               </button>
@@ -435,14 +433,10 @@ export default function ApprovalQueue({
                 type="button"
                 disabled={actionLoading}
                 onClick={handleActionSubmit}
-                className={`px-5 py-2 rounded-xl text-xs font-semibold text-white transition-all flex items-center gap-1.5 cursor-pointer ${
-                  actionModal.type === 'approve'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/20'
-                    : 'bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-500/20'
-                }`}
+                className={actionModal.type === 'approve' ? 'btn-primary text-xs' : 'btn-danger text-xs'}
               >
                 {actionLoading ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>Confirm &amp; Proceed</>
                 )}
