@@ -5,13 +5,20 @@ from fastapi.staticfiles import StaticFiles
 
 from app.database import engine, Base
 from app.routers import auth, purchase_requests, vendors, approvals, dashboard
+from app.compliance.ingest import init_policy_db
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# Ingest & index procurement policy documents in ChromaDB
+try:
+    init_policy_db()
+except Exception as e:
+    print(f"[WARN] Policy DB initialization warning on startup: {e}")
+
 app = FastAPI(
     title="ProcureIQ - Intelligent NetSuite-Aligned ERP Procurement",
-    description="Streamlining procurement from Purchase Request to Purchase Order with automated RFQ bidding, dynamic multi-rule approvals, Gemini 2.5 Flash AI auditing, and 3-Way Match tracking.",
+    description="Streamlining procurement from Purchase Request to Purchase Order with automated RFQ bidding, dynamic multi-rule approvals, Gemini 2.5 Flash AI auditing, autonomous RAG policy compliance guard, and 3-Way Match tracking.",
     version="1.0.0"
 )
 
