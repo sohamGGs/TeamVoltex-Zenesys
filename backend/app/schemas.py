@@ -79,9 +79,12 @@ class VendorBidOut(BaseModel):
     vendor_id: int
     pr_id: int
     quoted_price: float
+    original_quoted_price: Optional[float] = None
     delivery_days: int
+    original_delivery_days: Optional[int] = None
     notes: Optional[str] = None
     bid_score: float
+    negotiation_transcript: Optional[str] = None
     vendor: Optional[VendorOut] = None
     model_config = ConfigDict(from_attributes=True)
 
@@ -93,14 +96,17 @@ class VendorRecommendation(BaseModel):
     pricing_tier: str
     contact_email: str
     quoted_price: float
+    original_quoted_price: Optional[float] = None
     estimated_budget: float
     delivery_days: int
+    original_delivery_days: Optional[int] = None
     avg_delivery_days: int
     reliability_score: float
     history_score_raw: float
     notes: Optional[str] = None
     scores: ScoreBreakdown
     rank: int
+    negotiation_transcript: Optional[List[Dict[str, Any]]] = None
 
 
 class RecommendationsResponse(BaseModel):
@@ -109,6 +115,47 @@ class RecommendationsResponse(BaseModel):
     estimated_budget: float
     urgency: str
     department: str
+    recommendations: List[VendorRecommendation]
+
+
+# --- AUTONOMOUS NEGOTIATION SCHEMAS ---
+class NegotiationTurnOut(BaseModel):
+    round: int
+    speaker: str
+    speaker_role: str  # "buyer" | "vendor"
+    message: str
+    offered_price: float
+    offered_days: int
+    is_fallback: bool = False
+
+
+class VendorNegotiationResultOut(BaseModel):
+    vendor_id: int
+    vendor_name: str
+    pricing_tier: str
+    original_price: float
+    negotiated_price: float
+    original_days: int
+    negotiated_days: int
+    savings_amount: float
+    savings_pct: float
+    days_saved: int
+    status: str  # "completed" | "held"
+    transcript: List[NegotiationTurnOut]
+    updated_score: Optional[float] = None
+
+
+class NegotiationResponse(BaseModel):
+    pr_id: int
+    pr_title: str
+    estimated_budget: float
+    total_initial_spend: float
+    total_negotiated_spend: float
+    total_savings: float
+    total_savings_pct: float
+    top_vendor_id: int
+    top_vendor_name: str
+    results: List[VendorNegotiationResultOut]
     recommendations: List[VendorRecommendation]
 
 

@@ -76,9 +76,12 @@ class VendorBid(Base):
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=False)
     pr_id = Column(Integer, ForeignKey("purchase_requests.id"), nullable=False)
     quoted_price = Column(Float, nullable=False)
+    original_quoted_price = Column(Float, nullable=True)
     delivery_days = Column(Integer, nullable=False)
+    original_delivery_days = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
     bid_score = Column(Float, default=0.0, nullable=False)
+    negotiation_transcript = Column(Text, nullable=True)  # JSON-encoded list of turns
 
     # Relationships
     vendor = relationship("Vendor", back_populates="bids")
