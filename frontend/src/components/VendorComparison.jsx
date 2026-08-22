@@ -216,67 +216,67 @@ export default function VendorComparison({
   const getTierBadge = (tier) => {
     switch (tier) {
       case 'Enterprise Tier-1':
-        return 'bg-purple-500/15 text-purple-300 border-purple-500/30';
+        return 'bg-purple-50 text-purple-700 border-purple-200 font-mono text-[9px] uppercase font-semibold';
       case 'Mid-Tier':
-        return 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+        return 'bg-blue-50 text-blue-700 border-blue-200 font-mono text-[9px] uppercase font-semibold';
       default:
-        return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 font-mono text-[9px] uppercase font-semibold';
     }
   };
 
   const getScoreColor = (score) => {
-    if (score >= 90) return 'text-emerald-400';
-    if (score >= 80) return 'text-blue-400';
-    if (score >= 70) return 'text-amber-400';
-    return 'text-rose-400';
+    if (score >= 90) return 'text-emerald-600';
+    if (score >= 80) return 'text-blue-600';
+    if (score >= 70) return 'text-amber-600';
+    return 'text-rose-600';
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Header & PR Selector & Negotiation Trigger */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#e8e6df] pb-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> Multi-Vendor RFQ Scoring &amp; Autonomous Negotiation
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+          <span className="text-[10px] uppercase font-mono tracking-widest text-slate-500 font-bold block mb-1">
+            RFQ Sourcing &amp; Autonomous Negotiation
+          </span>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
             Vendor Comparison &amp; AI Recommendation
           </h1>
-          <p className="text-slate-400 text-xs md:text-sm mt-1">
-            Autonomous multi-agent LangGraph negotiation with Gemini 2.5 Flash executive insights.
+          <p className="text-slate-500 text-xs mt-0.5">
+            Autonomous multi-agent LangGraph negotiation with Gemini 2.5 Flash trade-off auditing.
           </p>
         </div>
 
         {/* PR Selector & Negotiation Button */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-400 font-medium whitespace-nowrap">Active PR:</label>
-            <div className="relative min-w-[240px]">
+            <label className="text-xs text-slate-600 font-mono uppercase text-[10px] whitespace-nowrap">Active PR:</label>
+            <div className="relative min-w-[220px]">
               <select
                 value={activePrId || ''}
                 onChange={(e) => setActivePrId(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                className="w-full bg-white border border-[#dcd9ce] rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer font-mono shadow-sm"
               >
                 {prs.map((p) => (
                   <option key={p.id} value={p.id}>
-                    PR-{(p.id || 0).toString().padStart(4, '0')} : {p.title?.slice(0, 32)}...
+                    PR-{(p.id || 0).toString().padStart(4, '0')} : {p.title?.slice(0, 28)}...
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Autonomous Negotiation Trigger Button */}
+          {/* Autonomous Negotiation Trigger Button (Reserved Primary Accent) */}
           <button
             type="button"
             onClick={handleRunNegotiation}
             disabled={isNegotiating || !activePrId}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-60 cursor-pointer"
+            className="btn-primary"
           >
-            <Zap className={`w-4 h-4 text-amber-300 ${isNegotiating ? 'animate-bounce' : ''}`} />
+            <Zap className={`w-3.5 h-3.5 ${isNegotiating ? 'animate-bounce' : ''}`} />
             {isNegotiating ? (
               <span className="flex items-center gap-1.5">
-                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Negotiating (3 Rounds)...
               </span>
             ) : (
@@ -288,38 +288,40 @@ export default function VendorComparison({
 
       {/* PR Summary Bar */}
       {prDetail && (
-        <div className="glass-card rounded-2xl p-5 border-slate-750 flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <span className="font-mono text-sm font-bold text-blue-400">
+        <div className="enterprise-card p-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-0.5 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-bold text-slate-900">
                 PR-{(prDetail.id || 0).toString().padStart(4, '0')}
               </span>
-              <span className="text-sm font-bold text-white">{prDetail.title}</span>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                prDetail.urgency === 'Critical' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+              <span className="text-sm font-semibold text-slate-900 truncate">{prDetail.title}</span>
+              <span className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded border ${
+                prDetail.urgency === 'Critical'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200 font-semibold'
+                  : 'bg-[#f3f2ec] text-slate-600 border-[#e8e6df]'
               }`}>
-                {prDetail.urgency} Urgency
+                {prDetail.urgency}
               </span>
             </div>
-            <p className="text-xs text-slate-400 line-clamp-1">{prDetail.item_description}</p>
+            <p className="text-xs text-slate-500 truncate max-w-xl">{prDetail.item_description}</p>
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-slate-400 text-[10px] block">Authorized Budget</span>
-              <span className="font-mono font-bold text-white">${(prDetail.estimated_budget || 0).toLocaleString()}</span>
+          <div className="flex items-center gap-3 text-xs">
+            <div className="px-3 py-1.5 rounded-lg bg-[#f5f4f0] border border-[#e8e6df]">
+              <span className="text-slate-500 text-[9px] uppercase font-mono block">Estimated Budget</span>
+              <span className="font-mono tabular-nums font-bold text-slate-900">${(prDetail.estimated_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-slate-400 text-[10px] block">Department</span>
-              <span className="font-bold text-slate-300">{prDetail.department}</span>
+            <div className="px-3 py-1.5 rounded-lg bg-[#f5f4f0] border border-[#e8e6df]">
+              <span className="text-slate-500 text-[9px] uppercase font-mono block">Department</span>
+              <span className="font-medium text-slate-700">{prDetail.department}</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-slate-400 text-[10px] block">Quantity</span>
-              <span className="font-bold text-slate-300">{prDetail.quantity} Units</span>
+            <div className="px-3 py-1.5 rounded-lg bg-[#f5f4f0] border border-[#e8e6df]">
+              <span className="text-slate-500 text-[9px] uppercase font-mono block">Quantity</span>
+              <span className="font-mono text-slate-700">{prDetail.quantity} Units</span>
             </div>
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
-              <span className="text-slate-400 text-[10px] block">PR Status</span>
-              <span className="font-bold text-emerald-400">{prDetail.status}</span>
+            <div className="px-3 py-1.5 rounded-lg bg-[#f5f4f0] border border-[#e8e6df]">
+              <span className="text-slate-500 text-[9px] uppercase font-mono block">PR Status</span>
+              <span className="font-mono text-[11px] text-emerald-700 font-semibold">{prDetail.status}</span>
             </div>
           </div>
         </div>
@@ -327,77 +329,75 @@ export default function VendorComparison({
 
       {/* PO Generated Success Alert */}
       {poSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-emerald-300 flex items-center justify-between gap-3 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between gap-3 animate-fade-in shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
             <div>
-              <strong className="text-white text-sm">Purchase Order {poSuccess.po_number} Authorized!</strong>
-              <div className="text-emerald-300/90 mt-0.5">
-                ReportLab PDF generated and saved to ERP repository. Status: Sent.
-              </div>
+              <strong className="text-slate-900 text-xs">Purchase Order {poSuccess.po_number} Authorized</strong>
+              <span className="text-emerald-700 ml-2">
+                ReportLab PDF generated and indexed in NetSuite register.
+              </span>
             </div>
           </div>
           <button
             onClick={() => onNavigateToTab('purchase_orders')}
-            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="btn-success text-[11px] py-1 px-2.5"
           >
-            Open in PO Register <ArrowRight className="w-3.5 h-3.5" />
+            Open in PO Register <ArrowRight className="w-3 h-3" />
           </button>
         </div>
       )}
 
       {/* --- AUTONOMOUS MULTI-AGENT NEGOTIATION TRANSCRIPT PANEL --- */}
       {(isNegotiating || (negotiationData && Array.isArray(negotiationData.results) && negotiationData.results.length > 0)) && (
-        <div className="glass-card rounded-2xl p-6 border-purple-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30 space-y-6 shadow-xl shadow-purple-950/20 animate-fade-in">
+        <div className="enterprise-card p-5 space-y-4 animate-fade-in">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/80 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
-                <Zap className="w-5 h-5 text-amber-300" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e8e6df] pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+                <Bot className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-extrabold text-white">LangGraph Multi-Agent Autonomous Negotiation</h2>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                    <Bot className="w-3 h-3 text-purple-400" /> 3-Round Fixed Graph
+                  <h2 className="text-sm font-bold text-slate-900">LangGraph Multi-Agent Negotiation Transcript</h2>
+                  <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-[#f3f2ec] text-slate-600 border border-[#e8e6df]">
+                    3-Round StateGraph
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  BuyerAgent dynamically bargained with the Top 3 scored vendor personas under hard-guarded price &amp; SLA floors.
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Simultaneous multi-round bargaining between BuyerAgent and top-ranked supplier personas.
                 </p>
               </div>
             </div>
 
             {/* Total Savings Pill */}
             {negotiationData && (
-              <div className="flex items-center gap-3 self-start sm:self-auto bg-slate-900/90 border border-purple-500/30 px-4 py-2 rounded-xl">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Autonomous Net Savings</span>
-                  <div className="text-sm font-extrabold text-emerald-400 font-mono flex items-center gap-1">
-                    +${(negotiationData.total_savings || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    <span className="text-xs text-emerald-300 font-normal">
-                      ({(negotiationData.total_savings_pct || 0).toFixed(1)}%)
-                    </span>
-                  </div>
-                </div>
+              <div className="flex items-center gap-2.5 self-start sm:self-auto bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
+                <span className="text-[10px] text-emerald-800 uppercase font-semibold">Net Savings:</span>
+                <span className="text-xs font-bold text-emerald-700 font-mono">
+                  +${(negotiationData.total_savings || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </span>
+                <span className="text-[11px] text-emerald-600 font-mono">
+                  ({(negotiationData.total_savings_pct || 0).toFixed(1)}%)
+                </span>
               </div>
             )}
           </div>
 
           {isNegotiating ? (
-            <div className="py-12 text-center space-y-4">
-              <div className="w-10 h-10 border-3 border-purple-500/30 border-t-purple-400 rounded-full animate-spin mx-auto" />
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-white">LangGraph Multi-Agent Graph in Execution</h3>
-                <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Simultaneously orchestrating 3 rounds of price discovery, persona counters, and contractual SLA settlement...
+            <div className="py-10 text-center space-y-3">
+              <div className="w-8 h-8 border-2 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto" />
+              <div className="space-y-0.5">
+                <h3 className="text-xs font-semibold text-slate-900">Negotiation in Progress</h3>
+                <p className="text-[11px] text-slate-500">
+                  Orchestrating price discovery, persona counter-offers, and SLA settlement...
                 </p>
               </div>
             </div>
           ) : negotiationData && (
-            <div className="space-y-5">
-              {/* 3-Column Chat Transcript Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="space-y-4">
+              {/* 3-Column Messenger Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {negotiationData.results.map((vr) => {
                   const hasSavings = vr.savings_amount > 0;
                   const isHeld = vr.status === 'held';
@@ -405,50 +405,50 @@ export default function VendorComparison({
                   return (
                     <div
                       key={vr.vendor_id}
-                      className="rounded-2xl bg-slate-900/90 border border-slate-750 flex flex-col justify-between overflow-hidden shadow-lg"
+                      className="rounded-xl bg-[#fbfbfa] border border-[#e8e6df] flex flex-col justify-between overflow-hidden shadow-sm"
                     >
                       {/* Column Header: Vendor Persona & Delta */}
-                      <div className="p-4 bg-slate-850/80 border-b border-slate-750 space-y-2">
+                      <div className="p-3.5 bg-[#f5f4f0] border-b border-[#e8e6df] space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getTierBadge(vr.pricing_tier)}`}>
+                          <span className={`text-[9px] font-medium px-1.5 py-0.2 rounded border ${getTierBadge(vr.pricing_tier)}`}>
                             {vr.pricing_tier}
                           </span>
                           {isHeld ? (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                              Standard Quote Held
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#f3f2ec] text-slate-600 border border-[#e8e6df]">
+                              Standard Quote
                             </span>
                           ) : hasSavings ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
+                            <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono">
                               -${vr.savings_amount.toLocaleString()} ({vr.savings_pct.toFixed(1)}%)
                             </span>
                           ) : (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#f3f2ec] text-slate-600 border border-[#e8e6df]">
                               Held Firm
                             </span>
                           )}
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-bold text-white truncate">{vr.vendor_name}</h4>
-                          <div className="flex items-center justify-between text-xs pt-1 font-mono">
-                            <span className="text-slate-400">
-                              Original: <span className="line-through">${vr.original_price.toLocaleString()}</span>
+                          <h4 className="text-xs font-bold text-slate-900 truncate">{vr.vendor_name}</h4>
+                          <div className="flex items-center justify-between text-xs pt-0.5 font-mono">
+                            <span className="text-slate-500 text-[11px]">
+                              Init: <span className="line-through">${vr.original_price.toLocaleString()}</span>
                             </span>
-                            <span className="text-emerald-400 font-bold">
+                            <span className="text-emerald-700 font-semibold text-xs">
                               Final: ${vr.negotiated_price.toLocaleString()}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
-                            <span>SLA: {vr.original_days}d → <strong className="text-white">{vr.negotiated_days}d</strong></span>
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
+                            <span>SLA: {vr.original_days}d → <strong className="text-slate-800">{vr.negotiated_days}d</strong></span>
                             {vr.days_saved > 0 && (
-                              <span className="text-blue-300">({vr.days_saved}d faster)</span>
+                              <span className="text-blue-600">({vr.days_saved}d faster)</span>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Message Bubbles Container */}
-                      <div className="p-3.5 space-y-3 flex-1 overflow-y-auto max-h-[380px] text-xs">
+                      {/* Chat Messages Container */}
+                      <div className="p-3 space-y-2.5 flex-1 overflow-y-auto max-h-[340px] text-xs bg-[#f5f4f0]/50">
                         {vr.transcript.map((turn, tIdx) => {
                           const isBuyer = turn.speaker_role === 'buyer';
 
@@ -457,32 +457,22 @@ export default function VendorComparison({
                               key={tIdx}
                               className={`flex flex-col space-y-1 ${isBuyer ? 'items-start' : 'items-end'}`}
                             >
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 px-1">
-                                {isBuyer ? (
-                                  <>
-                                    <Bot className="w-3 h-3 text-blue-400" />
-                                    <span className="font-semibold text-blue-300">BuyerAgent (R{turn.round})</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className="font-semibold text-purple-300">Vendor Sales (R{turn.round})</span>
-                                    <User className="w-3 h-3 text-purple-400" />
-                                  </>
-                                )}
+                              <div className="text-[9px] text-slate-500 px-0.5 font-medium">
+                                {isBuyer ? `BuyerAgent • Round ${turn.round}` : `${vr.vendor_name?.split(' ')[0]} Sales • Round ${turn.round}`}
                               </div>
 
                               <div
-                                className={`p-3 rounded-2xl max-w-[92%] space-y-1.5 leading-relaxed ${
+                                className={`p-2.5 rounded-lg max-w-[92%] space-y-1.5 leading-relaxed text-[11px] shadow-sm ${
                                   isBuyer
-                                    ? 'bg-blue-950/50 border border-blue-500/30 text-blue-100 rounded-tl-sm'
-                                    : 'bg-slate-800/90 border border-purple-500/30 text-slate-200 rounded-tr-sm'
+                                    ? 'bg-blue-50 border border-blue-200 text-slate-800'
+                                    : 'bg-[#fbfbfa] border border-[#e8e6df] text-slate-800'
                                 }`}
                               >
-                                <p className="text-[11px]">{turn.message}</p>
-                                <div className="flex items-center gap-2 pt-1 border-t border-white/10 text-[10px] font-mono text-slate-300">
-                                  <span>Offer: <strong className="text-white">${turn.offered_price.toLocaleString()}</strong></span>
+                                <p>{turn.message}</p>
+                                <div className="flex items-center gap-2 pt-1 border-t border-[#e8e6df] text-[10px] font-mono text-slate-500">
+                                  <span>Offer: <strong className="text-slate-900">${turn.offered_price.toLocaleString()}</strong></span>
                                   <span>•</span>
-                                  <span>SLA: <strong className="text-white">{turn.offered_days}d</strong></span>
+                                  <span>SLA: <strong className="text-slate-900">{turn.offered_days}d</strong></span>
                                 </div>
                               </div>
                             </div>
@@ -490,18 +480,18 @@ export default function VendorComparison({
                         })}
                       </div>
 
-                      {/* Footer / Fast Action for this Column */}
-                      <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between">
-                        <span className="text-[10px] text-slate-400">
-                          Updated Score: <strong className="text-emerald-400 font-mono">{vr.updated_score?.toFixed(1) || '95.0'}/100</strong>
+                      {/* Footer Action */}
+                      <div className="p-2.5 bg-[#f5f4f0] border-t border-[#e8e6df] flex items-center justify-between">
+                        <span className="text-[10px] text-slate-600">
+                          Score: <strong className="text-emerald-700 font-mono">{vr.updated_score?.toFixed(1) || '95.0'}/100</strong>
                         </span>
                         <button
                           type="button"
                           disabled={generatingPo}
                           onClick={() => handleAuthorizePo(vr.vendor_id)}
-                          className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold flex items-center gap-1 shadow transition-colors cursor-pointer"
+                          className="btn-primary text-[10px] py-1 px-2.5"
                         >
-                          <FileCheck className="w-3 h-3" /> Award Negotiated
+                          <FileCheck className="w-3 h-3" /> Award Bid
                         </button>
                       </div>
                     </div>
@@ -514,24 +504,24 @@ export default function VendorComparison({
       )}
 
       {/* AI Executive Auditor Panel */}
-      <div className="glass-card rounded-2xl p-6 border-blue-500/30 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-blue-950/20 space-y-5 shadow-glow-blue/10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-              <Cpu className="w-5 h-5" />
+      <div className="enterprise-card p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#e8e6df] pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+              <Cpu className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white">Gemini 2.5 Flash Strategic Procurement Audit</h2>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                <h2 className="text-sm font-bold text-slate-900">Gemini 2.5 Strategic Procurement Audit</h2>
+                <span className={`text-[9px] font-medium px-1.5 py-0.2 rounded border ${
                   aiAudit?.is_live_gemini
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                    : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-semibold'
+                    : 'bg-[#f3f2ec] text-slate-600 border-[#e8e6df]'
                 }`}>
-                  {aiAudit?.is_live_gemini ? 'Gemini 2.5 Live' : 'Autonomous AI Auditor'}
+                  {aiAudit?.is_live_gemini ? 'Gemini 2.5 Live' : 'Autonomous Auditor'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Deep structural trade-off analysis across cost, lead time, reliability, and supplier risk</p>
+              <p className="text-[11px] text-slate-500">Trade-off optimization across cost, delivery SLA, reliability, and risk.</p>
             </div>
           </div>
 
@@ -539,89 +529,89 @@ export default function VendorComparison({
             type="button"
             onClick={() => triggerAiAudit()}
             disabled={aiLoading}
-            className="px-3.5 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+            className="btn-secondary text-[11px] py-1 px-2.5 self-start sm:self-auto"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${aiLoading ? 'animate-spin' : ''}`} />
-            {aiLoading ? 'Auditing Bids...' : 'Re-Run AI Audit'}
+            <RefreshCw className={`w-3 h-3 ${aiLoading ? 'animate-spin' : ''}`} />
+            <span>{aiLoading ? 'Auditing...' : 'Re-Run Audit'}</span>
           </button>
         </div>
 
         {aiLoading ? (
-          <div className="py-8 text-center space-y-3">
-            <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-slate-400">Gemini 2.5 Flash is analyzing quotation variances and historical reliability...</p>
+          <div className="py-6 text-center space-y-2">
+            <div className="w-6 h-6 border-2 border-blue-600/20 border-t-blue-600 rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-slate-500">Gemini 2.5 Flash is analyzing quotation trade-offs...</p>
           </div>
         ) : aiAudit ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left AI Column: Recommended Winner & Confidence */}
-            <div className="lg:col-span-5 p-4 rounded-xl bg-slate-900/80 border border-slate-750 space-y-3.5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            {/* Left AI Column */}
+            <div className="lg:col-span-5 p-3.5 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recommended Award</span>
-                <span className="text-xs font-extrabold text-emerald-400 font-mono">
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Recommended Award</span>
+                <span className="text-xs font-bold text-emerald-700 font-mono">
                   {aiAudit.confidence_score}% Confidence
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <div className="text-lg font-extrabold text-white flex items-center gap-2">
-                  <Award className="w-5 h-5 text-amber-400" />
+              <div className="space-y-0.5">
+                <div className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-amber-500" />
                   {aiAudit.selected_vendor_name}
                 </div>
-                <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5" />
-                  Est. Net Savings: ${aiAudit.net_savings_estimate.toLocaleString()}
+                <div className="text-xs text-emerald-700 font-medium flex items-center gap-1">
+                  <DollarSign className="w-3 h-3" />
+                  Est. Savings: ${aiAudit.net_savings_estimate.toLocaleString()}
                 </div>
               </div>
 
               {/* Confidence Progress Bar */}
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#e8e6df] rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+                  className="bg-blue-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${aiAudit.confidence_score}%` }}
                 />
               </div>
 
               {/* Executive Summary */}
-              <div className="p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 text-xs text-slate-300 leading-relaxed italic">
+              <div className="p-2.5 rounded-lg bg-[#fbfbfa] border border-[#e8e6df] text-xs text-slate-700 leading-relaxed shadow-sm">
                 "{aiAudit.executive_summary}"
               </div>
             </div>
 
-            {/* Right AI Column: Key Advantages & Risk Matrix */}
-            <div className="lg:col-span-7 space-y-4">
+            {/* Right AI Column */}
+            <div className="lg:col-span-7 space-y-3">
               {/* Key Advantages */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-400" /> Key Strategic Advantages
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5 text-emerald-600" /> Key Strategic Advantages
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {aiAudit.key_advantages?.map((adv, i) => (
-                    <div key={i} className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 mt-1.5" />
-                      <span>{adv}</span>
+                    <div key={i} className="p-2 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] text-xs text-slate-700 flex items-start gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0 mt-1" />
+                      <span className="text-[11px]">{adv}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Risk Assessment */}
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-750 space-y-2">
+              <div className="p-3 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Risk Level
+                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Risk Level
                   </span>
-                  <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] uppercase border ${
+                  <span className={`px-1.5 py-0.2 rounded font-semibold text-[9px] uppercase border ${
                     aiAudit.risk_assessment?.risk_level === 'High'
-                      ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                      ? 'bg-rose-50 text-rose-700 border-rose-200'
                       : aiAudit.risk_assessment?.risk_level === 'Moderate'
-                      ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                      : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                   }`}>
                     {aiAudit.risk_assessment?.risk_level || 'Low'} Risk
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
-                  <strong className="text-slate-300">Mitigation:</strong> {aiAudit.risk_assessment?.mitigation_advice}
+                <p className="text-[11px] text-slate-500">
+                  <strong className="text-slate-700">Mitigation:</strong> {aiAudit.risk_assessment?.mitigation_advice}
                 </p>
               </div>
             </div>
@@ -631,40 +621,38 @@ export default function VendorComparison({
 
       {/* Vendor Scoring Algorithm Formula Explainer Bar */}
       <div className="space-y-2">
-        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-blue-400" />
-            <span>
-              <strong className="text-white">ProcureIQ Scoring Model:</strong> Total (100) = Price (30 max) + Delivery (25 max) + Reliability (25 max) + History (20 max) + Nearshoring ESG Bonus (+3.0 max)
+        <div className="p-3 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+          <div className="flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-blue-600" />
+            <span className="text-[11px]">
+              <strong className="text-slate-900">ProcureIQ Scoring:</strong> Total (100) = Price (30 max) + Delivery (25 max) + Reliability (25 max) + History (20 max) + Nearshoring ESG Bonus (+3.0 max)
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[10px] text-slate-500 font-mono">
             History Score = mean(delivery, order_accuracy, quality)
           </span>
         </div>
 
         {/* Cold-Start & Local Sourcing Policy Note */}
-        <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex items-start gap-2.5 text-xs text-slate-300">
-          <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+        <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-200 flex items-start gap-2 text-[11px] text-slate-700">
+          <Info className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="leading-relaxed">
-            <span className="font-bold text-emerald-300">Oracle NetSuite Vendor Cold-Start &amp; ESG Policy: </span>
-            Local SMB &amp; new suppliers with 0 legacy ERP orders are evaluated via a <strong className="text-white">Bayesian Neutral Baseline (80%)</strong> + <strong className="text-emerald-300">+3.0 pt Nearshoring ESG Credit</strong> (&lt;25km), preventing cold-start discrimination while maintaining ISO quality standards.
+            <span className="font-semibold text-emerald-700">Oracle NetSuite Vendor Cold-Start &amp; ESG Policy: </span>
+            Local SMB &amp; new suppliers with 0 legacy ERP orders are evaluated via a <strong className="text-slate-900">Bayesian Neutral Baseline (80%)</strong> + <strong className="text-emerald-700 font-semibold">+3.0 pt Nearshoring ESG Credit</strong> (&lt;25km proximity), preventing cold-start discrimination while maintaining ISO quality standards.
           </div>
         </div>
       </div>
 
       {/* Vendor Bids Matrix Table */}
-      <div className="glass-card rounded-2xl p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
+      <div className="enterprise-card p-5 space-y-3">
+        <div className="flex items-center justify-between border-b border-[#e8e6df] pb-3">
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Award className="w-5 h-5 text-blue-400" /> Supplier Quotation Ranking Matrix
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">Quotation Audit</span>
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <Award className="w-3.5 h-3.5 text-slate-400" /> Supplier Quotation Ranking Matrix
             </h3>
-            <p className="text-xs text-slate-400">
-              Ranked comparison of all active vendor submissions for this purchase request
-            </p>
           </div>
-          <span className="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300">
+          <span className="px-2 py-0.5 rounded bg-[#f3f2ec] border border-[#e8e6df] text-[10px] font-mono text-slate-600 uppercase font-medium">
             {recommendations.length} Bids Evaluated
           </span>
         </div>
@@ -672,24 +660,24 @@ export default function VendorComparison({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-700/80 text-slate-400 uppercase text-[10px] tracking-wider bg-slate-900/40">
-                <th className="py-3 px-3">Rank</th>
-                <th className="py-3 px-3">Supplier &amp; Tier</th>
-                <th className="py-3 px-3 font-mono text-right">Quoted Price</th>
-                <th className="py-3 px-3 text-right">Variance</th>
-                <th className="py-3 px-3 text-center">Delivery SLA</th>
-                <th className="py-3 px-3 text-center">Reliability</th>
-                <th className="py-3 px-3 text-center">History (ERP)</th>
-                <th className="py-3 px-3 text-center font-mono">Price (30)</th>
-                <th className="py-3 px-3 text-center font-mono">Deliv (25)</th>
-                <th className="py-3 px-3 text-center font-mono">Rel (25)</th>
-                <th className="py-3 px-3 text-center font-mono">Hist (20)</th>
-                <th className="py-3 px-3 text-center font-mono">ESG (+3)</th>
-                <th className="py-3 px-3 font-mono text-right">Total Score</th>
-                <th className="py-3 px-3 text-center">Action</th>
+              <tr className="border-b border-[#e8e6df] text-slate-500 uppercase text-[10px] tracking-wider bg-[#f3f2ec]">
+                <th className="py-2.5 px-3">Rank</th>
+                <th className="py-2.5 px-3">Supplier &amp; Tier</th>
+                <th className="py-2.5 px-3 font-mono text-right">Quoted Price</th>
+                <th className="py-2.5 px-3 text-right">Variance</th>
+                <th className="py-2.5 px-3 text-center">Delivery SLA</th>
+                <th className="py-2.5 px-3 text-center">Reliability</th>
+                <th className="py-2.5 px-3 text-center">History (ERP)</th>
+                <th className="py-2.5 px-3 text-center font-mono">Price (30)</th>
+                <th className="py-2.5 px-3 text-center font-mono">Deliv (25)</th>
+                <th className="py-2.5 px-3 text-center font-mono">Rel (25)</th>
+                <th className="py-2.5 px-3 text-center font-mono">Hist (20)</th>
+                <th className="py-2.5 px-3 text-center font-mono">ESG (+3)</th>
+                <th className="py-2.5 px-3 font-mono text-right">Score / 100</th>
+                <th className="py-2.5 px-3 text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-[#eeebe3]">
               {recommendations.map((rec) => {
                 const isWinner = rec.rank === 1;
                 const isSelectedByAi = aiAudit?.selected_vendor_name === rec.vendor_name;
@@ -699,140 +687,155 @@ export default function VendorComparison({
                     key={rec.bid_id}
                     className={`transition-colors ${
                       isWinner
-                        ? 'bg-blue-950/25 hover:bg-blue-950/40'
-                        : 'hover:bg-slate-800/40'
+                        ? 'bg-blue-50/40 hover:bg-blue-50/70'
+                        : 'hover:bg-[#f5f4f0]/80'
                     }`}
                   >
                     {/* Rank */}
-                    <td className="py-3.5 px-3 font-bold">
+                    <td className="py-3 px-3 font-bold">
                       {rec.rank === 1 ? (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] flex items-center gap-1 w-max">
-                          <Award className="w-3 h-3" /> #1 Best
+                        <span className="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-mono uppercase flex items-center gap-1 w-max font-semibold">
+                          <Award className="w-3 h-3 text-amber-500" /> #1 Best
                         </span>
                       ) : (
-                        <span className="text-slate-400 font-mono">#{rec.rank}</span>
+                        <span className="text-slate-400 font-mono text-xs">#{rec.rank}</span>
                       )}
                     </td>
 
                     {/* Supplier & Tier */}
-                    <td className="py-3.5 px-3">
-                      <div className="font-semibold text-white flex flex-wrap items-center gap-1.5">
+                    <td className="py-3 px-3">
+                      <div className="font-semibold text-slate-900 flex flex-wrap items-center gap-1.5">
                         {rec.vendor_name}
                         {isSelectedByAi && (
-                          <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded border border-blue-500/30">
+                          <span className="text-[9px] font-mono bg-blue-50 text-blue-700 px-1.5 py-0.2 rounded border border-blue-200 font-semibold">
                             AI Pick
                           </span>
                         )}
                         {rec.is_incubator && (
                           <span
-                            title="Evaluated via Bayesian Cold-Start Prior (80% baseline) + Nearshoring ESG Credit (+3.0 pts for local supply)"
-                            className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-500/30 flex items-center gap-0.5"
+                            title="Evaluated via Bayesian Cold-Start Prior (80% baseline) + Nearshoring ESG Credit"
+                            className="text-[9px] font-mono bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded border border-emerald-200 flex items-center gap-0.5 font-semibold"
                           >
                             🌱 Local SMB ({rec.local_proximity_km || 12}km)
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-1.5 mt-0.5">
                         <span className={`text-[9px] px-1.5 py-0.2 rounded border font-medium ${getTierBadge(rec.pricing_tier)}`}>
                           {rec.pricing_tier}
                         </span>
-                        <span className="text-[10px] text-slate-400">{rec.contact_email}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">{rec.contact_email}</span>
                       </div>
                     </td>
 
                     {/* Quoted Price */}
-                    <td className="py-3.5 px-3 text-right font-mono font-bold">
+                    <td className="py-3 px-3 text-right font-mono tabular-nums font-bold">
                       {rec.original_quoted_price && rec.original_quoted_price > rec.quoted_price ? (
                         <div className="space-y-0.5">
-                          <div className="text-[10px] text-slate-500 line-through">
+                          <div className="text-[10px] text-slate-400 line-through">
                             ${rec.original_quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </div>
-                          <div className="text-emerald-400 font-extrabold flex items-center justify-end gap-1">
-                            <Zap className="w-3 h-3 text-amber-300" />
+                          <div className="text-emerald-700 font-bold flex items-center justify-end gap-1">
+                            <Zap className="w-3 h-3" />
                             ${rec.quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-white">
+                        <span className="text-slate-900">
                           ${rec.quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </td>
 
                     {/* Variance vs Budget */}
-                    <td className="py-3.5 px-3 text-right font-mono text-[11px]">
-                      <span className={rec.scores.price_variance_pct <= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                    <td className="py-3 px-3 text-right font-mono tabular-nums text-[11px]">
+                      <span className={rec.scores.price_variance_pct <= 0 ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold'}>
                         {rec.scores.price_variance_pct <= 0 ? '' : '+'}
                         {rec.scores.price_variance_pct}%
                       </span>
                     </td>
 
                     {/* Delivery Days */}
-                    <td className="py-3.5 px-3 text-center">
-                      <span className="font-semibold text-slate-200">{rec.delivery_days} days</span>
+                    <td className="py-3 px-3 text-center">
+                      <span className="font-mono text-slate-800">{rec.delivery_days}d</span>
                       {rec.original_delivery_days && rec.original_delivery_days > rec.delivery_days && (
-                        <span className="text-[10px] text-blue-400 block font-semibold">
-                          (-{rec.original_delivery_days - rec.delivery_days}d SLA)
+                        <span className="text-[10px] text-emerald-700 font-mono block">
+                          (-{rec.original_delivery_days - rec.delivery_days}d)
                         </span>
                       )}
-                      <span className="text-[10px] text-slate-500 block">(avg: {rec.avg_delivery_days})</span>
                     </td>
 
                     {/* Reliability */}
-                    <td className="py-3.5 px-3 text-center">
-                      <span className="font-semibold text-slate-200">{rec.reliability_score}%</span>
+                    <td className="py-3 px-3 text-center font-mono">
+                      <span className="text-slate-800">{rec.reliability_score}%</span>
                     </td>
 
                     {/* History */}
-                    <td className="py-3.5 px-3 text-center">
-                      <span className="font-semibold text-slate-200">{rec.history_score_raw}%</span>
+                    <td className="py-3 px-3 text-center font-mono">
+                      <span className="text-slate-800">{rec.history_score_raw}%</span>
                       {rec.is_incubator && (
-                        <span className="text-[9px] text-emerald-400 block font-semibold">
-                          (Bayesian Prior)
+                        <span className="text-[9px] text-emerald-700 block font-mono">
+                          (Prior)
                         </span>
                       )}
                     </td>
 
                     {/* Price Score (30) */}
-                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                    <td className="py-3 px-3 text-center font-mono text-slate-700 text-[11px]">
                       {rec.scores.price_score.toFixed(1)}
                     </td>
 
                     {/* Delivery Score (25) */}
-                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                    <td className="py-3 px-3 text-center font-mono text-slate-700 text-[11px]">
                       {rec.scores.delivery_score.toFixed(1)}
                     </td>
 
                     {/* Reliability Score (25) */}
-                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                    <td className="py-3 px-3 text-center font-mono text-slate-700 text-[11px]">
                       {rec.scores.reliability_score.toFixed(1)}
                     </td>
 
                     {/* History Score (20) */}
-                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                    <td className="py-3 px-3 text-center font-mono text-slate-700 text-[11px]">
                       {rec.scores.history_score.toFixed(1)}
                     </td>
 
                     {/* ESG Nearshoring Bonus (+3) */}
-                    <td className="py-3.5 px-3 text-center font-mono">
+                    <td className="py-3 px-3 text-center font-mono text-[11px]">
                       {rec.scores.nearshoring_bonus > 0 ? (
-                        <span className="text-emerald-400 font-bold">+{rec.scores.nearshoring_bonus.toFixed(1)}</span>
+                        <span className="text-emerald-700 font-semibold">+{rec.scores.nearshoring_bonus.toFixed(1)}</span>
                       ) : (
-                        <span className="text-slate-600">-</span>
+                        <span className="text-slate-400">-</span>
                       )}
                     </td>
 
-                    {/* Total Composite Score (100) */}
-                    <td className="py-3.5 px-3 text-right font-mono font-extrabold text-sm">
-                      <span className={getScoreColor(rec.scores.total_score)}>
-                        {rec.scores.total_score.toFixed(1)}
-                      </span>
+                    {/* Total Composite Score with Signature Mini Progress Bar */}
+                    <td className="py-3 px-3 text-right">
+                      <div className="flex items-center justify-end gap-2 font-mono">
+                        <div className="w-12 h-1.5 rounded-full bg-[#e8e6df] overflow-hidden hidden sm:block">
+                          <div
+                            className={`h-full rounded-full ${
+                              rec.scores.total_score >= 90
+                                ? 'bg-emerald-500'
+                                : rec.scores.total_score >= 80
+                                ? 'bg-blue-500'
+                                : rec.scores.total_score >= 70
+                                ? 'bg-amber-500'
+                                : 'bg-rose-500'
+                            }`}
+                            style={{ width: `${Math.min(100, rec.scores.total_score)}%` }}
+                          />
+                        </div>
+                        <span className={`font-bold tabular-nums text-xs ${getScoreColor(rec.scores.total_score)}`}>
+                          {rec.scores.total_score.toFixed(1)}
+                        </span>
+                      </div>
                     </td>
 
                     {/* Action Button */}
-                    <td className="py-3.5 px-3 text-center">
+                    <td className="py-3 px-3 text-center">
                       {prDetail?.purchase_order ? (
-                        <span className="text-[10px] text-emerald-400 font-semibold px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="text-[9px] font-mono uppercase text-slate-500 px-2 py-0.5 rounded bg-[#f3f2ec] border border-[#e8e6df] font-medium">
                           PO Issued
                         </span>
                       ) : (
@@ -840,14 +843,12 @@ export default function VendorComparison({
                           type="button"
                           disabled={generatingPo}
                           onClick={() => handleAuthorizePo(rec.vendor_id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer mx-auto ${
-                            isWinner
-                              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20'
-                              : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                          className={`text-[11px] py-1 px-2.5 mx-auto ${
+                            isWinner ? 'btn-primary' : 'btn-secondary'
                           }`}
                         >
-                          <FileCheck className="w-3.5 h-3.5" />
-                          <span>Award &amp; PO</span>
+                          <FileCheck className="w-3 h-3" />
+                          <span>{isWinner ? 'Award & Issue PO' : 'Award'}</span>
                         </button>
                       )}
                     </td>
