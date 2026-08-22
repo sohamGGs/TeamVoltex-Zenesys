@@ -4,6 +4,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  ShieldCheck,
   ShieldAlert,
   ArrowRight,
   Sparkles,
@@ -35,11 +36,13 @@ export default function ApprovalQueue({
   const fetchQueue = async () => {
     try {
       setLoading(true);
+      setError('');
       const data = await approvalsAPI.getQueue(statusFilter === 'All' ? null : statusFilter);
-      setQueue(data);
+      setQueue(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to load approval queue:', err);
-      setError('Unable to load approval workflows.');
+      setError(err.response?.data?.detail || 'Unable to load approval workflows.');
+      setQueue([]);
     } finally {
       setLoading(false);
     }
@@ -63,7 +66,7 @@ export default function ApprovalQueue({
         const res = await approvalsAPI.generatePO(
           item.pr_id,
           item.top_bid?.vendor_id,
-          comment || `Authorized by ${user?.full_name} (${user?.role})`
+          comment || `Authorized by ${user?.full_name || 'Executive'} (${user?.role || 'Approver'})`
         );
         if (onPoGenerated) onPoGenerated(res.po);
       } else {
@@ -71,7 +74,7 @@ export default function ApprovalQueue({
         await approvalsAPI.takeAction(
           item.id,
           'Rejected',
-          comment || `Rejected by ${user?.full_name} (${user?.role})`
+          comment || `Rejected by ${user?.full_name || 'Executive'} (${user?.role || 'Approver'})`
         );
       }
 
@@ -87,11 +90,12 @@ export default function ApprovalQueue({
   };
 
   const getRuleBadge = (rule) => {
-    if (rule.includes('Rule 1')) {
+    const r = String(rule || '');
+    if (r.includes('Rule 1')) {
       return { label: 'Rule 1: Plant Head CapEx ($100k+)', color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' };
-    } else if (rule.includes('Rule 2')) {
+    } else if (r.includes('Rule 2')) {
       return { label: 'Rule 2: VP Ops Critical Urgency (>500)', color: 'bg-amber-500/15 text-amber-300 border-amber-500/30' };
-    } else if (rule.includes('Rule 3')) {
+    } else if (r.includes('Rule 3')) {
       return { label: 'Rule 3: Finance Director (> $50k)', color: 'bg-purple-500/15 text-purple-300 border-purple-500/30' };
     } else {
       return { label: 'Rule 4: Department Manager Standard', color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' };
@@ -196,9 +200,9 @@ export default function ApprovalQueue({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3.5">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-sm font-bold text-blue-400">
-                      PR-{wf.pr_id.toString().padStart(4, '0')}
+                      PR-{(wf.pr_id || 0).toString().padStart(4, '0')}
                     </span>
-                    <h3 className="text-base font-bold text-white">{wf.pr_title}</h3>
+                    <h3 className="text-base font-bold text-white">{wf.pr_title || 'Purchase Request'}</h3>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
@@ -215,7 +219,7 @@ export default function ApprovalQueue({
                           </>
                         ) : (
                           <>
-                            <ShieldAlert className="w-3 h-3 text-rose-400" /> Policy Alert ({wf.compliance.violations?.length || 1})
+                            <ShieldAlert className="w-3 h-3 text-rose-400" /> Policy Alert ({Array.isArray(wf.compliance.violations) ? wf.compliance.violations.length : 1})
                           </>
                         )}
                       </span>
@@ -225,7 +229,7 @@ export default function ApprovalQueue({
                       {ruleBadge.label}
                     </span>
                     <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${getStatusPill(wf.status)}`}>
-                      {wf.status}
+                      {wf.status || 'Pending'}
                     </span>
                   </div>
                 </div>
@@ -234,17 +238,17 @@ export default function ApprovalQueue({
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                   {/* Left PR Info */}
                   <div className="md:col-span-7 space-y-2 text-xs">
-                    <p className="text-slate-300 leading-relaxed">{wf.item_description}</p>
+                    <p className="text-slate-300 leading-relaxed">{wf.item_description || 'No description provided.'}</p>
                     
                     <div className="flex flex-wrap gap-4 text-slate-400 pt-1">
                       <span className="flex items-center gap-1">
-                        <Building className="w-3.5 h-3.5 text-slate-500" /> Department: <strong className="text-slate-200">{wf.department}</strong>
+                        <Building className="w-3.5 h-3.5 text-slate-500" /> Department: <strong className="text-slate-200">{wf.department || 'Operations'}</strong>
                       </span>
                       <span className="flex items-center gap-1">
                         <User className="w-3.5 h-3.5 text-slate-500" /> Requester: <strong className="text-slate-200">{wf.requester?.full_name || 'Elena Vance'}</strong>
                       </span>
                       <span className="flex items-center gap-1">
-                        <DollarSign className="w-3.5 h-3.5 text-slate-500" /> Authorized Budget: <strong className="text-emerald-400 font-mono">${wf.estimated_budget.toLocaleString()}</strong>
+                        <DollarSign className="w-3.5 h-3.5 text-slate-500" /> Authorized Budget: <strong className="text-emerald-400 font-mono">${(wf.estimated_budget || 0).toLocaleString()}</strong>
                       </span>
                     </div>
 
@@ -256,9 +260,9 @@ export default function ApprovalQueue({
                           RAG Policy Guard Alerts:
                         </div>
                         <div className="space-y-1 pl-4">
-                          {wf.compliance.violations?.map((v, idx) => (
+                          {(Array.isArray(wf.compliance.violations) ? wf.compliance.violations : []).map((v, idx) => (
                             <div key={idx} className="text-[11px] text-slate-300">
-                              <strong className="text-rose-200">{v.rule_name} ({v.severity}):</strong> {v.explanation}
+                              <strong className="text-rose-200">{v.rule_name || 'Policy Rule'} ({v.severity || 'Medium'}):</strong> {v.explanation || ''}
                             </div>
                           ))}
                         </div>
@@ -293,15 +297,15 @@ export default function ApprovalQueue({
                       <div>
                         <div className="font-bold text-white text-sm">{wf.top_bid?.vendor_name || 'Primary Supplier'}</div>
                         <div className="text-[10px] text-slate-400">
-                          {wf.top_bid?.pricing_tier} • SLA: {wf.top_bid?.delivery_days} Business Days
+                          {wf.top_bid?.pricing_tier || 'Enterprise Tier-1'} • SLA: {wf.top_bid?.delivery_days || 3} Business Days
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-mono font-extrabold text-white">
-                          ${(wf.top_bid?.quoted_price || wf.estimated_budget).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ${(wf.top_bid?.quoted_price || wf.estimated_budget || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-[10px] text-emerald-400">
-                          Net Savings: ${Math.max(0, wf.estimated_budget - (wf.top_bid?.quoted_price || wf.estimated_budget)).toLocaleString()}
+                          Net Savings: ${Math.max(0, (wf.estimated_budget || 0) - (wf.top_bid?.quoted_price || wf.estimated_budget || 0)).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -311,7 +315,7 @@ export default function ApprovalQueue({
                 {/* Bottom Row: Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
                   <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" /> Initiated on {new Date(wf.created_at).toLocaleDateString()}
+                    <Clock className="w-3.5 h-3.5" /> Initiated on {wf.created_at ? new Date(wf.created_at).toLocaleDateString() : 'Recently'}
                   </div>
 
                   <div className="flex items-center gap-2.5">
@@ -352,7 +356,7 @@ export default function ApprovalQueue({
                         onClick={() => onNavigateToTab('purchase_orders')}
                         className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                       >
-                        <FileText className="w-3.5 h-3.5" /> View {wf.po_number}
+                        <FileText className="w-3.5 h-3.5" /> View {wf.po_number || 'PO'}
                       </button>
                     )}
                   </div>
@@ -364,7 +368,7 @@ export default function ApprovalQueue({
       )}
 
       {/* Action Modal (Authorize / Reject) */}
-      {actionModal && (
+      {actionModal && actionModal.item && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 md:p-7 max-w-lg w-full space-y-5 border-slate-700 shadow-2xl animate-fade-in">
             <div className="border-b border-slate-700/60 pb-3 flex items-center justify-between">
@@ -385,20 +389,20 @@ export default function ApprovalQueue({
 
             <div className="space-y-3 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                <div className="font-bold text-white">{actionModal.item.pr_title}</div>
+                <div className="font-bold text-white">{actionModal.item.pr_title || 'Purchase Request'}</div>
                 <div className="text-slate-400">
-                  Department: <strong className="text-slate-300">{actionModal.item.department}</strong> • 
-                  Budget: <strong className="text-emerald-400 font-mono">${actionModal.item.estimated_budget.toLocaleString()}</strong>
+                  Department: <strong className="text-slate-300">{actionModal.item.department || 'Operations'}</strong> • 
+                  Budget: <strong className="text-emerald-400 font-mono">${(actionModal.item.estimated_budget || 0).toLocaleString()}</strong>
                 </div>
                 <div className="text-[11px] text-blue-400 font-semibold pt-1">
-                  Policy: {actionModal.item.triggered_rule}
+                  Policy: {actionModal.item.triggered_rule || 'Standard Policy'}
                 </div>
               </div>
 
               {actionModal.type === 'approve' && (
                 <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs">
-                  Awarding to winning supplier <strong className="text-white">{actionModal.item.top_bid?.vendor_name}</strong> at 
-                  <strong className="font-mono text-emerald-300"> ${actionModal.item.top_bid?.quoted_price?.toLocaleString()}</strong>. 
+                  Awarding to winning supplier <strong className="text-white">{actionModal.item.top_bid?.vendor_name || 'Primary Supplier'}</strong> at 
+                  <strong className="font-mono text-emerald-300"> ${(actionModal.item.top_bid?.quoted_price || actionModal.item.estimated_budget || 0).toLocaleString()}</strong>. 
                   A binding ReportLab PDF Purchase Order will be generated immediately.
                 </div>
               )}

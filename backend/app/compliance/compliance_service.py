@@ -145,7 +145,6 @@ def evaluate_compliance(pr_data: Dict[str, Any]) -> Dict[str, Any]:
 
     try:
         from google import genai
-        from google.genai import types
 
         client = genai.Client(api_key=api_key)
 
@@ -188,7 +187,7 @@ Return ONLY a valid, raw JSON object matching this schema:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
-            config=types.GenerateContentConfig(
+            config=genai.types.GenerateContentConfig(
                 response_mime_type="application/json",
                 temperature=0.1
             )
