@@ -15,7 +15,16 @@ import {
   ArrowRight,
   RefreshCw,
   Cpu,
-  Info
+  Info,
+  Zap,
+  Bot,
+  MessageSquare,
+  Clock,
+  ArrowDownRight,
+  ShieldAlert,
+  SlidersHorizontal,
+  User,
+  Building
 } from 'lucide-react';
 import { prAPI, vendorAPI, dashboardAPI, approvalsAPI } from '../api';
 
@@ -36,13 +45,18 @@ export default function VendorComparison({
   const [error, setError] = useState('');
   const [poSuccess, setPoSuccess] = useState(null);
 
+  // Negotiation States
+  const [isNegotiating, setIsNegotiating] = useState(false);
+  const [negotiationData, setNegotiationData] = useState(null);
+  const [negotiationSuccess, setNegotiationSuccess] = useState(false);
+
   // Load all PRs for the dropdown
   useEffect(() => {
     const fetchPrs = async () => {
       try {
         const data = await prAPI.getAll();
-        setPrs(data);
-        if (!activePrId && data.length > 0) {
+        setPrs(data || []);
+        if (!activePrId && data && data.length > 0) {
           setActivePrId(data[0].id);
         }
       } catch (err) {
@@ -68,6 +82,8 @@ export default function VendorComparison({
       setError('');
       setAiAudit(null);
       setPoSuccess(null);
+      setNegotiationData(null);
+      setNegotiationSuccess(false);
 
       try {
         const [detailData, recData] = await Promise.all([
@@ -75,7 +91,54 @@ export default function VendorComparison({
           vendorAPI.getRecommendations(activePrId),
         ]);
         setPrDetail(detailData);
-        setRecommendations(recData.recommendations || []);
+        const recs = recData?.recommendations || [];
+        setRecommendations(recs);
+
+        // Check if top recommendations already have saved negotiation transcripts
+        const topWithTranscripts = recs.filter((r) => Array.isArray(r.negotiation_transcript) && r.negotiation_transcript.length > 0);
+        if (topWithTranscripts.length > 0) {
+          // Reconstruct negotiation data from stored bids
+          let totalInit = 0;
+          let totalNeg = 0;
+          const reconstructedResults = topWithTranscripts.map((r) => {
+            const origP = r.original_quoted_price ?? r.quoted_price;
+            const origD = r.original_delivery_days ?? r.delivery_days;
+            const savings = Math.max(0, origP - r.quoted_price);
+            const savingsPct = origP > 0 ? (savings / origP) * 100 : 0;
+            totalInit += origP;
+            totalNeg += r.quoted_price;
+
+            return {
+              vendor_id: r.vendor_id,
+              vendor_name: r.vendor_name,
+              pricing_tier: r.pricing_tier,
+              original_price: origP,
+              negotiated_price: r.quoted_price,
+              original_days: origD,
+              negotiated_days: r.delivery_days,
+              savings_amount: savings,
+              savings_pct: savingsPct,
+              days_saved: Math.max(0, origD - r.delivery_days),
+              status: 'completed',
+              transcript: r.negotiation_transcript,
+              updated_score: r.scores?.total_score
+            };
+          });
+
+          setNegotiationData({
+            pr_id: activePrId,
+            pr_title: detailData.title,
+            estimated_budget: detailData.estimated_budget,
+            total_initial_spend: totalInit,
+            total_negotiated_spend: totalNeg,
+            total_savings: Math.max(0, totalInit - totalNeg),
+            total_savings_pct: totalInit > 0 ? ((totalInit - totalNeg) / totalInit) * 100 : 0,
+            top_vendor_id: recs[0]?.vendor_id,
+            top_vendor_name: recs[0]?.vendor_name,
+            results: reconstructedResults,
+            recommendations: recs
+          });
+        }
 
         // Automatically trigger AI audit
         triggerAiAudit(activePrId);
@@ -101,6 +164,29 @@ export default function VendorComparison({
       console.error('AI audit error:', err);
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleRunNegotiation = async () => {
+    if (!activePrId) return;
+    setIsNegotiating(true);
+    setError('');
+    setNegotiationSuccess(false);
+
+    try {
+      const data = await vendorAPI.negotiate(activePrId);
+      setNegotiationData(data);
+      if (Array.isArray(data.recommendations)) {
+        setRecommendations(data.recommendations);
+      }
+      setNegotiationSuccess(true);
+      // Re-trigger AI audit with the newly negotiated pricing
+      triggerAiAudit(activePrId);
+    } catch (err) {
+      console.error('Negotiation error:', err);
+      setError(err.response?.data?.detail || 'Failed to complete autonomous negotiation.');
+    } finally {
+      setIsNegotiating(false);
     }
   };
 
@@ -147,36 +233,56 @@ export default function VendorComparison({
 
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
-      {/* Header & PR Selector */}
+      {/* Header & PR Selector & Negotiation Trigger */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> Multi-Vendor RFQ Scoring & AI Auditor
+            <Sparkles className="w-3.5 h-3.5" /> Multi-Vendor RFQ Scoring &amp; Autonomous Negotiation
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
             Vendor Comparison &amp; AI Recommendation
           </h1>
           <p className="text-slate-400 text-xs md:text-sm mt-1">
-            Weighted composite scoring (Price 30, Delivery 25, Reliability 25, History 20) with Gemini 2.5 Flash executive insights.
+            Autonomous multi-agent LangGraph negotiation with Gemini 2.5 Flash executive insights.
           </p>
         </div>
 
-        {/* PR Selector Dropdown */}
-        <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400 font-medium whitespace-nowrap">Active PR:</label>
-          <div className="relative min-w-[260px]">
-            <select
-              value={activePrId || ''}
-              onChange={(e) => setActivePrId(Number(e.target.value))}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
-            >
-              {prs.map((p) => (
-                <option key={p.id} value={p.id}>
-                  PR-{p.id.toString().padStart(4, '0')} : {p.title.slice(0, 35)}...
-                </option>
-              ))}
-            </select>
+        {/* PR Selector & Negotiation Button */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-slate-400 font-medium whitespace-nowrap">Active PR:</label>
+            <div className="relative min-w-[240px]">
+              <select
+                value={activePrId || ''}
+                onChange={(e) => setActivePrId(Number(e.target.value))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+              >
+                {prs.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    PR-{(p.id || 0).toString().padStart(4, '0')} : {p.title?.slice(0, 32)}...
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {/* Autonomous Negotiation Trigger Button */}
+          <button
+            type="button"
+            onClick={handleRunNegotiation}
+            disabled={isNegotiating || !activePrId}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-60 cursor-pointer"
+          >
+            <Zap className={`w-4 h-4 text-amber-300 ${isNegotiating ? 'animate-bounce' : ''}`} />
+            {isNegotiating ? (
+              <span className="flex items-center gap-1.5">
+                <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Negotiating (3 Rounds)...
+              </span>
+            ) : (
+              'Run Autonomous Negotiation'
+            )}
+          </button>
         </div>
       </div>
 
@@ -186,7 +292,7 @@ export default function VendorComparison({
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
               <span className="font-mono text-sm font-bold text-blue-400">
-                PR-{prDetail.id.toString().padStart(4, '0')}
+                PR-{(prDetail.id || 0).toString().padStart(4, '0')}
               </span>
               <span className="text-sm font-bold text-white">{prDetail.title}</span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -201,7 +307,7 @@ export default function VendorComparison({
           <div className="flex items-center gap-4 text-xs">
             <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
               <span className="text-slate-400 text-[10px] block">Authorized Budget</span>
-              <span className="font-mono font-bold text-white">${prDetail.estimated_budget.toLocaleString()}</span>
+              <span className="font-mono font-bold text-white">${(prDetail.estimated_budget || 0).toLocaleString()}</span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
               <span className="text-slate-400 text-[10px] block">Department</span>
@@ -237,6 +343,173 @@ export default function VendorComparison({
           >
             Open in PO Register <ArrowRight className="w-3.5 h-3.5" />
           </button>
+        </div>
+      )}
+
+      {/* --- AUTONOMOUS MULTI-AGENT NEGOTIATION TRANSCRIPT PANEL --- */}
+      {(isNegotiating || (negotiationData && Array.isArray(negotiationData.results) && negotiationData.results.length > 0)) && (
+        <div className="glass-card rounded-2xl p-6 border-purple-500/40 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30 space-y-6 shadow-xl shadow-purple-950/20 animate-fade-in">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/80 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+                <Zap className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-extrabold text-white">LangGraph Multi-Agent Autonomous Negotiation</h2>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                    <Bot className="w-3 h-3 text-purple-400" /> 3-Round Fixed Graph
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  BuyerAgent dynamically bargained with the Top 3 scored vendor personas under hard-guarded price &amp; SLA floors.
+                </p>
+              </div>
+            </div>
+
+            {/* Total Savings Pill */}
+            {negotiationData && (
+              <div className="flex items-center gap-3 self-start sm:self-auto bg-slate-900/90 border border-purple-500/30 px-4 py-2 rounded-xl">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Autonomous Net Savings</span>
+                  <div className="text-sm font-extrabold text-emerald-400 font-mono flex items-center gap-1">
+                    +${(negotiationData.total_savings || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <span className="text-xs text-emerald-300 font-normal">
+                      ({(negotiationData.total_savings_pct || 0).toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {isNegotiating ? (
+            <div className="py-12 text-center space-y-4">
+              <div className="w-10 h-10 border-3 border-purple-500/30 border-t-purple-400 rounded-full animate-spin mx-auto" />
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-white">LangGraph Multi-Agent Graph in Execution</h3>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  Simultaneously orchestrating 3 rounds of price discovery, persona counters, and contractual SLA settlement...
+                </p>
+              </div>
+            </div>
+          ) : negotiationData && (
+            <div className="space-y-5">
+              {/* 3-Column Chat Transcript Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {negotiationData.results.map((vr) => {
+                  const hasSavings = vr.savings_amount > 0;
+                  const isHeld = vr.status === 'held';
+
+                  return (
+                    <div
+                      key={vr.vendor_id}
+                      className="rounded-2xl bg-slate-900/90 border border-slate-750 flex flex-col justify-between overflow-hidden shadow-lg"
+                    >
+                      {/* Column Header: Vendor Persona & Delta */}
+                      <div className="p-4 bg-slate-850/80 border-b border-slate-750 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getTierBadge(vr.pricing_tier)}`}>
+                            {vr.pricing_tier}
+                          </span>
+                          {isHeld ? (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                              Standard Quote Held
+                            </span>
+                          ) : hasSavings ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
+                              -${vr.savings_amount.toLocaleString()} ({vr.savings_pct.toFixed(1)}%)
+                            </span>
+                          ) : (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                              Held Firm
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-bold text-white truncate">{vr.vendor_name}</h4>
+                          <div className="flex items-center justify-between text-xs pt-1 font-mono">
+                            <span className="text-slate-400">
+                              Original: <span className="line-through">${vr.original_price.toLocaleString()}</span>
+                            </span>
+                            <span className="text-emerald-400 font-bold">
+                              Final: ${vr.negotiated_price.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+                            <span>SLA: {vr.original_days}d → <strong className="text-white">{vr.negotiated_days}d</strong></span>
+                            {vr.days_saved > 0 && (
+                              <span className="text-blue-300">({vr.days_saved}d faster)</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Message Bubbles Container */}
+                      <div className="p-3.5 space-y-3 flex-1 overflow-y-auto max-h-[380px] text-xs">
+                        {vr.transcript.map((turn, tIdx) => {
+                          const isBuyer = turn.speaker_role === 'buyer';
+
+                          return (
+                            <div
+                              key={tIdx}
+                              className={`flex flex-col space-y-1 ${isBuyer ? 'items-start' : 'items-end'}`}
+                            >
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 px-1">
+                                {isBuyer ? (
+                                  <>
+                                    <Bot className="w-3 h-3 text-blue-400" />
+                                    <span className="font-semibold text-blue-300">BuyerAgent (R{turn.round})</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span className="font-semibold text-purple-300">Vendor Sales (R{turn.round})</span>
+                                    <User className="w-3 h-3 text-purple-400" />
+                                  </>
+                                )}
+                              </div>
+
+                              <div
+                                className={`p-3 rounded-2xl max-w-[92%] space-y-1.5 leading-relaxed ${
+                                  isBuyer
+                                    ? 'bg-blue-950/50 border border-blue-500/30 text-blue-100 rounded-tl-sm'
+                                    : 'bg-slate-800/90 border border-purple-500/30 text-slate-200 rounded-tr-sm'
+                                }`}
+                              >
+                                <p className="text-[11px]">{turn.message}</p>
+                                <div className="flex items-center gap-2 pt-1 border-t border-white/10 text-[10px] font-mono text-slate-300">
+                                  <span>Offer: <strong className="text-white">${turn.offered_price.toLocaleString()}</strong></span>
+                                  <span>•</span>
+                                  <span>SLA: <strong className="text-white">{turn.offered_days}d</strong></span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Footer / Fast Action for this Column */}
+                      <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400">
+                          Updated Score: <strong className="text-emerald-400 font-mono">{vr.updated_score?.toFixed(1) || '95.0'}/100</strong>
+                        </span>
+                        <button
+                          type="button"
+                          disabled={generatingPo}
+                          onClick={() => handleAuthorizePo(vr.vendor_id)}
+                          className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold flex items-center gap-1 shadow transition-colors cursor-pointer"
+                        >
+                          <FileCheck className="w-3 h-3" /> Award Negotiated
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -357,16 +630,27 @@ export default function VendorComparison({
       </div>
 
       {/* Vendor Scoring Algorithm Formula Explainer Bar */}
-      <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-blue-400" />
-          <span>
-            <strong className="text-white">ProcureIQ Scoring Model:</strong> Total (100) = Price (30 max) + Delivery (25 max) + Reliability (25 max) + History (20 max)
+      <div className="space-y-2">
+        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <Info className="w-4 h-4 text-blue-400" />
+            <span>
+              <strong className="text-white">ProcureIQ Scoring Model:</strong> Total (100) = Price (30 max) + Delivery (25 max) + Reliability (25 max) + History (20 max) + Nearshoring ESG Bonus (+3.0 max)
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-500 font-mono">
+            History Score = mean(delivery, order_accuracy, quality)
           </span>
         </div>
-        <span className="text-[11px] text-slate-500 font-mono">
-          History Score = mean(delivery, order_accuracy, quality)
-        </span>
+
+        {/* Cold-Start & Local Sourcing Policy Note */}
+        <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex items-start gap-2.5 text-xs text-slate-300">
+          <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="leading-relaxed">
+            <span className="font-bold text-emerald-300">Oracle NetSuite Vendor Cold-Start &amp; ESG Policy: </span>
+            Local SMB &amp; new suppliers with 0 legacy ERP orders are evaluated via a <strong className="text-white">Bayesian Neutral Baseline (80%)</strong> + <strong className="text-emerald-300">+3.0 pt Nearshoring ESG Credit</strong> (&lt;25km), preventing cold-start discrimination while maintaining ISO quality standards.
+          </div>
+        </div>
       </div>
 
       {/* Vendor Bids Matrix Table */}
@@ -377,7 +661,7 @@ export default function VendorComparison({
               <Award className="w-5 h-5 text-blue-400" /> Supplier Quotation Ranking Matrix
             </h3>
             <p className="text-xs text-slate-400">
-              Ranked comparison of all 8 active vendor submissions for this purchase request
+              Ranked comparison of all active vendor submissions for this purchase request
             </p>
           </div>
           <span className="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300">
@@ -390,18 +674,19 @@ export default function VendorComparison({
             <thead>
               <tr className="border-b border-slate-700/80 text-slate-400 uppercase text-[10px] tracking-wider bg-slate-900/40">
                 <th className="py-3 px-3">Rank</th>
-                <th className="py-3 px-3">Supplier & Tier</th>
+                <th className="py-3 px-3">Supplier &amp; Tier</th>
                 <th className="py-3 px-3 font-mono text-right">Quoted Price</th>
                 <th className="py-3 px-3 text-right">Variance</th>
                 <th className="py-3 px-3 text-center">Delivery SLA</th>
                 <th className="py-3 px-3 text-center">Reliability</th>
-                <th className="py-3 px-3 text-center">History</th>
+                <th className="py-3 px-3 text-center">History (ERP)</th>
                 <th className="py-3 px-3 text-center font-mono">Price (30)</th>
-                <th className="py-3 px-3 text-center font-mono">Del (25)</th>
+                <th className="py-3 px-3 text-center font-mono">Deliv (25)</th>
                 <th className="py-3 px-3 text-center font-mono">Rel (25)</th>
                 <th className="py-3 px-3 text-center font-mono">Hist (20)</th>
-                <th className="py-3 px-3 text-center font-mono font-bold text-white">Total (100)</th>
-                <th className="py-3 px-3 text-right">Fast-Track</th>
+                <th className="py-3 px-3 text-center font-mono">ESG (+3)</th>
+                <th className="py-3 px-3 font-mono text-right">Total Score</th>
+                <th className="py-3 px-3 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
@@ -431,11 +716,19 @@ export default function VendorComparison({
 
                     {/* Supplier & Tier */}
                     <td className="py-3.5 px-3">
-                      <div className="font-semibold text-white flex items-center gap-1.5">
+                      <div className="font-semibold text-white flex flex-wrap items-center gap-1.5">
                         {rec.vendor_name}
                         {isSelectedByAi && (
                           <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded border border-blue-500/30">
                             AI Pick
+                          </span>
+                        )}
+                        {rec.is_incubator && (
+                          <span
+                            title="Evaluated via Bayesian Cold-Start Prior (80% baseline) + Nearshoring ESG Credit (+3.0 pts for local supply)"
+                            className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-500/30 flex items-center gap-0.5"
+                          >
+                            🌱 Local SMB ({rec.local_proximity_km || 12}km)
                           </span>
                         )}
                       </div>
@@ -448,8 +741,22 @@ export default function VendorComparison({
                     </td>
 
                     {/* Quoted Price */}
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-white">
-                      ${rec.quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <td className="py-3.5 px-3 text-right font-mono font-bold">
+                      {rec.original_quoted_price && rec.original_quoted_price > rec.quoted_price ? (
+                        <div className="space-y-0.5">
+                          <div className="text-[10px] text-slate-500 line-through">
+                            ${rec.original_quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-emerald-400 font-extrabold flex items-center justify-end gap-1">
+                            <Zap className="w-3 h-3 text-amber-300" />
+                            ${rec.quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-white">
+                          ${rec.quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      )}
                     </td>
 
                     {/* Variance vs Budget */}
@@ -463,7 +770,12 @@ export default function VendorComparison({
                     {/* Delivery Days */}
                     <td className="py-3.5 px-3 text-center">
                       <span className="font-semibold text-slate-200">{rec.delivery_days} days</span>
-                      <span className="text-[10px] text-slate-400 block">(avg: {rec.avg_delivery_days})</span>
+                      {rec.original_delivery_days && rec.original_delivery_days > rec.delivery_days && (
+                        <span className="text-[10px] text-blue-400 block font-semibold">
+                          (-{rec.original_delivery_days - rec.delivery_days}d SLA)
+                        </span>
+                      )}
+                      <span className="text-[10px] text-slate-500 block">(avg: {rec.avg_delivery_days})</span>
                     </td>
 
                     {/* Reliability */}
@@ -474,6 +786,11 @@ export default function VendorComparison({
                     {/* History */}
                     <td className="py-3.5 px-3 text-center">
                       <span className="font-semibold text-slate-200">{rec.history_score_raw}%</span>
+                      {rec.is_incubator && (
+                        <span className="text-[9px] text-emerald-400 block font-semibold">
+                          (Bayesian Prior)
+                        </span>
+                      )}
                     </td>
 
                     {/* Price Score (30) */}
@@ -496,15 +813,24 @@ export default function VendorComparison({
                       {rec.scores.history_score.toFixed(1)}
                     </td>
 
+                    {/* ESG Nearshoring Bonus (+3) */}
+                    <td className="py-3.5 px-3 text-center font-mono">
+                      {rec.scores.nearshoring_bonus > 0 ? (
+                        <span className="text-emerald-400 font-bold">+{rec.scores.nearshoring_bonus.toFixed(1)}</span>
+                      ) : (
+                        <span className="text-slate-600">-</span>
+                      )}
+                    </td>
+
                     {/* Total Composite Score (100) */}
-                    <td className="py-3.5 px-3 text-center font-mono font-extrabold text-sm">
+                    <td className="py-3.5 px-3 text-right font-mono font-extrabold text-sm">
                       <span className={getScoreColor(rec.scores.total_score)}>
                         {rec.scores.total_score.toFixed(1)}
                       </span>
                     </td>
 
                     {/* Action Button */}
-                    <td className="py-3.5 px-3 text-right">
+                    <td className="py-3.5 px-3 text-center">
                       {prDetail?.purchase_order ? (
                         <span className="text-[10px] text-emerald-400 font-semibold px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
                           PO Issued
@@ -514,7 +840,7 @@ export default function VendorComparison({
                           type="button"
                           disabled={generatingPo}
                           onClick={() => handleAuthorizePo(rec.vendor_id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ml-auto ${
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer mx-auto ${
                             isWinner
                               ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20'
                               : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
