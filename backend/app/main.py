@@ -10,6 +10,22 @@ from app.compliance.ingest import init_policy_db
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# Ensure SQLite schema has any newly added columns
+try:
+    with engine.connect() as conn:
+        from sqlalchemy import text
+        res = conn.execute(text("PRAGMA table_info(vendor_bids);")).fetchall()
+        cols = [r[1] for r in res]
+        if "original_quoted_price" not in cols:
+            conn.execute(text("ALTER TABLE vendor_bids ADD COLUMN original_quoted_price FLOAT;"))
+        if "original_delivery_days" not in cols:
+            conn.execute(text("ALTER TABLE vendor_bids ADD COLUMN original_delivery_days INTEGER;"))
+        if "negotiation_transcript" not in cols:
+            conn.execute(text("ALTER TABLE vendor_bids ADD COLUMN negotiation_transcript TEXT;"))
+        conn.commit()
+except Exception as e:
+    pass
+
 # Ingest & index procurement policy documents in ChromaDB
 try:
     init_policy_db()
