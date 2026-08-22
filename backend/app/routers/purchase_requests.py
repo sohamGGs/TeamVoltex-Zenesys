@@ -1,5 +1,6 @@
 import random
-from typing import List
+import json
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -8,8 +9,26 @@ from app.database import get_db
 from app import models, schemas, auth
 from app.routers.approvals import evaluate_routing_rule
 from app.routers.vendors import compute_vendor_score
+from app.compliance.compliance_service import evaluate_compliance
 
 router = APIRouter(prefix="/purchase-requests", tags=["Purchase Requests"])
+
+
+def parse_compliance_out(check: Optional[models.ComplianceCheck]) -> Optional[schemas.ComplianceCheckOut]:
+    if not check:
+        return None
+    try:
+        violations_raw = json.loads(check.violations_json) if check.violations_json else []
+    except Exception:
+        violations_raw = []
+    return schemas.ComplianceCheckOut(
+        id=check.id,
+        pr_id=check.pr_id,
+        compliant=bool(check.compliant),
+        violations=[schemas.ViolationItem(**v) for v in violations_raw],
+        required_action=check.required_action or "",
+        checked_at=check.checked_at
+    )
 
 
 def auto_generate_rfq_bids(pr: models.PurchaseRequest, db: Session):
@@ -109,7 +128,8 @@ def get_purchase_requests(
             assigned_approver_role=assigned_role,
             approval_status=wf.status if wf else "Pending",
             po_number=po.po_number if po else None,
-            winning_vendor=winning_vendor_name
+            winning_vendor=winning_vendor_name,
+            compliance=parse_compliance_out(pr.compliance_check)
         )
         results.append(pr_out)
 
@@ -139,8 +159,31 @@ def create_purchase_request(
 
     # 2. Auto-generate RFQ bids from active vendors
     auto_generate_rfq_bids(pr, db)
+    bids_count = db.query(models.VendorBid).filter(models.VendorBid.pr_id == pr.id).count()
 
-    # 3. Dynamic Approval Routing
+    # 3. Autonomous RAG Policy Compliance Check (runs automatically upon PR creation)
+    comp_result = evaluate_compliance({
+        "id": pr.id,
+        "title": pr.title,
+        "item_description": pr.item_description,
+        "department": pr.department,
+        "estimated_budget": pr.estimated_budget,
+        "urgency": pr.urgency,
+        "quantity": pr.quantity,
+        "bids_count": bids_count
+    })
+
+    compliance_record = models.ComplianceCheck(
+        pr_id=pr.id,
+        compliant=bool(comp_result.get("compliant", True)),
+        violations_json=json.dumps(comp_result.get("violations", [])),
+        required_action=comp_result.get("required_action", "")
+    )
+    db.add(compliance_record)
+    db.commit()
+    db.refresh(compliance_record)
+
+    # 4. Dynamic Approval Routing
     rule_str, target_role = evaluate_routing_rule(
         estimated_budget=pr.estimated_budget,
         department=pr.department,
@@ -165,8 +208,6 @@ def create_purchase_request(
     db.commit()
     db.refresh(pr)
 
-    bids_count = db.query(models.VendorBid).filter(models.VendorBid.pr_id == pr.id).count()
-
     return schemas.PurchaseRequestOut(
         id=pr.id,
         title=pr.title,
@@ -184,8 +225,45 @@ def create_purchase_request(
         assigned_approver_role=target_role,
         approval_status=wf.status,
         po_number=None,
-        winning_vendor=None
+        winning_vendor=None,
+        compliance=parse_compliance_out(compliance_record)
     )
+
+
+@router.get("/{pr_id}/compliance", response_model=schemas.ComplianceCheckOut)
+def get_purchase_request_compliance(
+    pr_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    pr = db.query(models.PurchaseRequest).filter(models.PurchaseRequest.id == pr_id).first()
+    if not pr:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Purchase request not found")
+
+    check = pr.compliance_check
+    if not check:
+        bids_count = db.query(models.VendorBid).filter(models.VendorBid.pr_id == pr.id).count()
+        comp_result = evaluate_compliance({
+            "id": pr.id,
+            "title": pr.title,
+            "item_description": pr.item_description,
+            "department": pr.department,
+            "estimated_budget": pr.estimated_budget,
+            "urgency": pr.urgency,
+            "quantity": pr.quantity,
+            "bids_count": bids_count
+        })
+        check = models.ComplianceCheck(
+            pr_id=pr.id,
+            compliant=bool(comp_result.get("compliant", True)),
+            violations_json=json.dumps(comp_result.get("violations", [])),
+            required_action=comp_result.get("required_action", "")
+        )
+        db.add(check)
+        db.commit()
+        db.refresh(check)
+
+    return parse_compliance_out(check)
 
 
 @router.get("/{pr_id}", response_model=schemas.PurchaseRequestDetail)
@@ -250,7 +328,9 @@ def get_purchase_request_detail(
         approval_status=wf.status if wf else "Pending",
         po_number=po.po_number if po else None,
         winning_vendor=po.vendor.name if po and po.vendor else None,
+        compliance=parse_compliance_out(pr.compliance_check),
         bids=bids_out,
         approval_workflows=workflows_out,
         purchase_order=po_out
     )
+
