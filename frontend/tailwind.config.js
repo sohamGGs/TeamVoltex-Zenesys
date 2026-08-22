@@ -7,6 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
+        warm: {
+          canvas: '#f5f4f0',
+          card: '#fbfbfa',
+          surface: '#f3f2ec',
+          border: '#e8e6df',
+          borderSubtle: '#eeebe3',
+          muted: '#78756e',
+          text: '#1c1b18',
+        },
         slate: {
           950: '#070b14',
           900: '#0b0f19',
@@ -39,10 +48,15 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
       },
       boxShadow: {
+        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+        'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         'glow-blue': '0 0 25px -5px rgba(59, 130, 246, 0.3)',
         'glow-cyan': '0 0 25px -5px rgba(6, 182, 212, 0.3)',
         'glow-purple': '0 0 25px -5px rgba(139, 92, 246, 0.3)',
         'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.3)',
+      },
+      backdropBlur: {
+        'xs': '2px',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
