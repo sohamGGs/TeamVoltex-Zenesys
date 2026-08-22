@@ -5,57 +5,47 @@ import { authAPI } from '../api';
 const DEMO_PERSONAS = [
   {
     role: 'Lead Procurement Officer',
-    name: 'Elena Vance',
+    name: 'Priya Sharma',
     email: 'admin@procureiq.internal',
     password: 'admin123',
     department: 'Supply Chain',
     desc: 'Full Procurement authority, RFQ panel management & PO release',
-    color: 'from-blue-600 to-indigo-700',
-    border: 'hover:border-blue-500',
     badge: 'Super Admin / Lead'
   },
   {
     role: 'Plant Head',
-    name: 'Marcus Sterling',
+    name: 'Rajesh Verma',
     email: 'planthead@procureiq.internal',
     password: 'plant123',
     department: 'Operations',
     desc: 'Approver for Rule 1: Operations CapEx > $100,000',
-    color: 'from-emerald-600 to-teal-700',
-    border: 'hover:border-emerald-500',
     badge: 'Rule 1 Approver'
   },
   {
     role: 'VP Operations',
-    name: 'Victoria Zhao',
+    name: 'Kavita Reddy',
     email: 'vpops@procureiq.internal',
     password: 'vp123',
     department: 'Operations',
     desc: 'Approver for Rule 2: Critical Urgency & Bulk Quantity > 500',
-    color: 'from-amber-600 to-orange-700',
-    border: 'hover:border-amber-500',
     badge: 'Rule 2 Approver'
   },
   {
     role: 'Finance Director',
-    name: 'Arthur Pendelton',
+    name: 'Arjun Patel',
     email: 'finance@procureiq.internal',
     password: 'finance123',
     department: 'Finance',
     desc: 'Approver for Rule 3: High Value Purchase > $50,000',
-    color: 'from-purple-600 to-violet-700',
-    border: 'hover:border-purple-500',
     badge: 'Rule 3 Approver'
   },
   {
     role: 'Department Manager',
-    name: 'David Kross',
+    name: 'Rohan Mehta',
     email: 'deptmgr@procureiq.internal',
     password: 'dept123',
     department: 'Engineering',
     desc: 'Approver for Rule 4: Standard Departmental PRs',
-    color: 'from-cyan-600 to-blue-700',
-    border: 'hover:border-cyan-500',
     badge: 'Rule 4 Approver'
   }
 ];
@@ -94,75 +84,68 @@ export default function Login({ onLoginSuccess }) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#070b14] flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden">
-      {/* Dynamic Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[20%] w-[350px] h-[350px] bg-cyan-600/5 rounded-full blur-[100px] pointer-events-none" />
-
+    <div className="min-h-screen w-full bg-[#f5f4f0] flex flex-col justify-center items-center px-4 py-10 relative">
       {/* Main Container */}
-      <div className="w-full max-w-6xl z-10 space-y-8">
+      <div className="w-full max-w-5xl z-10 space-y-8">
         {/* Header Branding */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" /> NetSuite-Aligned Intelligent ERP
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold uppercase tracking-wider">
+            <span>NetSuite-Integrated Procurement ERP</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white flex items-center justify-center gap-3">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300">
-              ProcureIQ
-            </span>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 flex items-center justify-center gap-2">
+            ProcureIQ <span className="text-blue-600">Core</span>
           </h1>
-          <p className="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">
+          <p className="text-slate-500 text-xs md:text-sm max-w-xl mx-auto">
             Autonomous Procurement Optimization Engine: Streamlining PR-to-PO lifecycle, 
-            Tiered Vendor Scoring, Multi-Rule Dynamic Approvals & 3-Way Match Verification.
+            Tiered Vendor Scoring, Multi-Rule Dynamic Approvals &amp; 3-Way Match Verification.
           </p>
         </div>
 
         {/* 2-Column Section: Left is Form, Right is Quick Personas */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Direct Login */}
-          <div className="lg:col-span-5 glass-card rounded-2xl p-6 md:p-8 space-y-6">
-            <div className="border-b border-slate-700/60 pb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Lock className="w-5 h-5 text-blue-400" /> Secure ERP Sign In
+          <div className="lg:col-span-5 enterprise-card p-6 md:p-7 space-y-5 bg-[#fbfbfa] border border-[#e8e6df] shadow-xl">
+            <div className="border-b border-[#e8e6df] pb-3">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-blue-600" /> Sign In
               </h2>
-              <p className="text-slate-400 text-xs mt-1">Authenticate with your corporate credentials</p>
+              <p className="text-slate-500 text-xs mt-0.5">Authenticate with your corporate credentials</p>
             </div>
 
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5 animate-fade-in">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-slate-300">Corporate Email</label>
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-slate-700">Corporate Email</label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                  <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="name@procureiq.internal"
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full bg-white border border-[#dcd9ce] rounded-lg pl-9 pr-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors shadow-sm"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-slate-300">Password</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-slate-700">Password</label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                  <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                    className="w-full bg-white border border-[#dcd9ce] rounded-lg pl-9 pr-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors shadow-sm"
                   />
                 </div>
               </div>
@@ -170,84 +153,82 @@ export default function Login({ onLoginSuccess }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl text-sm transition-all duration-200 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+                className="btn-primary w-full py-2.5 text-xs justify-center"
               >
                 {loading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    Access ERP Workspace
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span>Access ERP Workspace</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
             </form>
 
-            <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+            <div className="pt-3 border-t border-[#e8e6df] text-[11px] text-slate-500 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> NetSuite Sandbox Connected
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> NetSuite Sandbox Synced
               </span>
-              <span>v1.0.0 (Hackathon)</span>
+              <span className="font-mono text-[10px]">v1.0.0</span>
             </div>
           </div>
 
           {/* Right Column: Quick Demo Persona Switcher */}
-          <div className="lg:col-span-7 glass-card rounded-2xl p-6 md:p-8 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
+          <div className="lg:col-span-7 enterprise-card p-6 space-y-4 bg-[#fbfbfa] border border-[#e8e6df] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#e8e6df] pb-3">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-indigo-400" /> Quick Demo Personas
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                  <UserCheck className="w-4 h-4 text-indigo-600" /> Quick Demo Personas
                 </h2>
-                <p className="text-slate-400 text-xs mt-1">
-                  1-Click instant sign in to test role-specific approval rules & workflows
+                <p className="text-slate-500 text-xs mt-0.5">
+                  1-Click instant sign in to test role-specific approval rules &amp; workflows
                 </p>
               </div>
-              <span className="px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs font-semibold">
+              <span className="px-2 py-0.5 rounded bg-[#f3f2ec] text-slate-700 border border-[#e8e6df] text-[10px] font-semibold">
                 5 Roles
               </span>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {DEMO_PERSONAS.map((persona) => (
                 <button
                   key={persona.email}
                   type="button"
                   onClick={() => handleQuickPersona(persona)}
                   disabled={loading}
-                  className={`w-full text-left p-3.5 rounded-xl bg-slate-900/60 border border-slate-750 ${persona.border} transition-all duration-200 hover:bg-slate-800/80 group flex items-center justify-between cursor-pointer disabled:opacity-50`}
+                  className="w-full text-left p-3 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] hover:border-[#d8d5ca] hover:bg-[#eeebe3] transition-colors group flex items-center justify-between cursor-pointer disabled:opacity-50 shadow-sm"
                 >
-                  <div className="flex items-center gap-3.5">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${persona.color} flex items-center justify-center text-white font-bold text-sm shadow-md`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-[#e8e6df] text-slate-700 font-bold text-xs flex items-center justify-center">
                       {persona.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white text-sm font-semibold group-hover:text-blue-300 transition-colors">
+                        <span className="text-slate-900 text-xs font-semibold group-hover:text-blue-600 transition-colors">
                           {persona.name}
                         </span>
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-medium">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#fbfbfa] text-slate-700 border border-[#e8e6df] font-medium">
                           {persona.role}
                         </span>
                       </div>
-                      <p className="text-slate-400 text-xs mt-0.5 line-clamp-1">{persona.desc}</p>
+                      <p className="text-slate-500 text-[11px] mt-0.5 line-clamp-1">{persona.desc}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="hidden sm:inline-block text-[11px] text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity font-medium">
-                      Select & Login
+                  <div className="flex items-center gap-1.5">
+                    <span className="hidden sm:inline-block text-[10px] text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity font-medium">
+                      Select
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:border-blue-500/50 group-hover:bg-blue-600/20 transition-all">
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
                   </div>
                 </button>
               ))}
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-900/40 border border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-2 text-slate-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="p-3 rounded-lg bg-[#f5f4f0] border border-[#e8e6df] flex items-center justify-between text-[11px] text-slate-600">
+              <span className="flex items-center gap-1.5 text-slate-700">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                 Multi-tier approval hierarchy pre-configured in SQLite database
               </span>
             </div>

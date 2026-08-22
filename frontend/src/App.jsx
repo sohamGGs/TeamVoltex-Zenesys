@@ -114,8 +114,8 @@ export default function App() {
 
   if (authChecking) {
     return (
-      <div className="min-h-screen w-full bg-[#070b14] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="min-h-screen w-full bg-[#f5f4f0] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -125,19 +125,19 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#070b14] text-slate-100 antialiased font-sans relative selection:bg-blue-500 selection:text-white">
+    <div className="flex min-h-screen bg-[#f5f4f0] text-slate-900 antialiased font-sans relative selection:bg-blue-600 selection:text-white">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-5 right-5 z-50 animate-fade-in">
-          <div className={`px-4 py-3 rounded-2xl shadow-2xl border flex items-center gap-2.5 text-xs font-semibold backdrop-blur-md ${
+        <div className="fixed top-4 right-4 z-50 animate-fade-in">
+          <div className={`px-3.5 py-2.5 rounded-lg shadow-lg border flex items-center gap-2 text-xs font-medium ${
             toast.type === 'error'
-              ? 'bg-rose-950/90 border-rose-500/40 text-rose-200 shadow-rose-500/10'
-              : 'bg-slate-900/90 border-emerald-500/40 text-emerald-300 shadow-emerald-500/10'
+              ? 'bg-[#fbfbfa] border-rose-200 text-rose-800 shadow-rose-500/5'
+              : 'bg-[#fbfbfa] border-[#e8e6df] text-slate-800 shadow-slate-500/10'
           }`}>
             {toast.type === 'error' ? (
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             )}
             <span>{toast.message}</span>
           </div>
@@ -167,7 +167,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'new_pr' && (
+        {(activeTab === 'new_pr' || activeTab === 'purchase_requests') && (
           <PurchaseRequestForm onPrCreated={handlePrCreated} />
         )}
 
