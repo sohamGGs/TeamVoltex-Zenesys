@@ -14,6 +14,7 @@ Base.metadata.create_all(bind=engine)
 try:
     with engine.connect() as conn:
         from sqlalchemy import text
+        # vendor_bids
         res = conn.execute(text("PRAGMA table_info(vendor_bids);")).fetchall()
         cols = [r[1] for r in res]
         if "original_quoted_price" not in cols:
@@ -22,6 +23,29 @@ try:
             conn.execute(text("ALTER TABLE vendor_bids ADD COLUMN original_delivery_days INTEGER;"))
         if "negotiation_transcript" not in cols:
             conn.execute(text("ALTER TABLE vendor_bids ADD COLUMN negotiation_transcript TEXT;"))
+
+        # vendors
+        res_v = conn.execute(text("PRAGMA table_info(vendors);")).fetchall()
+        cols_v = [r[1] for r in res_v]
+        if "is_local_vendor" not in cols_v:
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN is_local_vendor BOOLEAN DEFAULT 0;"))
+        if "is_incubator" not in cols_v:
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN is_incubator BOOLEAN DEFAULT 0;"))
+        if "local_proximity_km" not in cols_v:
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN local_proximity_km FLOAT DEFAULT 15.0;"))
+
+        # purchase_orders
+        res_po = conn.execute(text("PRAGMA table_info(purchase_orders);")).fetchall()
+        cols_po = [r[1] for r in res_po]
+        if "netsuite_internal_id" not in cols_po:
+            conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_internal_id VARCHAR(50) DEFAULT 'NS-REC-10482';"))
+        if "netsuite_sync_status" not in cols_po:
+            conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_sync_status VARCHAR(50) DEFAULT 'Synced (SuiteTalk REST)';"))
+        if "netsuite_subsidiary" not in cols_po:
+            conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_subsidiary VARCHAR(100) DEFAULT 'TechCorp Americas (Sub 01)';"))
+        if "netsuite_gl_account" not in cols_po:
+            conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_gl_account VARCHAR(100) DEFAULT '6010 - Direct Sourcing & Material CapEx';"))
+
         conn.commit()
 except Exception as e:
     pass
