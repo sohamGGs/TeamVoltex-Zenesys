@@ -1,4 +1,5 @@
 import os
+import json
 import secrets
 import datetime
 from typing import List, Optional
@@ -307,7 +308,12 @@ def get_approval_queue(
             } if top_bid else None,
             "bids_count": len(bids),
             "has_po": pr.purchase_order is not None,
-            "po_number": pr.purchase_order.po_number if pr.purchase_order else None
+            "po_number": pr.purchase_order.po_number if pr.purchase_order else None,
+            "compliance": {
+                "compliant": bool(pr.compliance_check.compliant),
+                "violations": json.loads(pr.compliance_check.violations_json) if (pr.compliance_check and pr.compliance_check.violations_json) else [],
+                "required_action": pr.compliance_check.required_action if pr.compliance_check else ""
+            } if pr.compliance_check else None
         })
 
     return results
