@@ -63,6 +63,10 @@ export const prAPI = {
     const response = await api.post('/purchase-requests', data);
     return response.data;
   },
+  getCompliance: async (id) => {
+    const response = await api.get(`/purchase-requests/${id}/compliance`);
+    return response.data;
+  },
 };
 
 // --- VENDORS API ---
