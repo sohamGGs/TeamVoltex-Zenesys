@@ -6,6 +6,7 @@ from sqlalchemy import (
     Float,
     Text,
     DateTime,
+    Boolean,
     ForeignKey
 )
 from sqlalchemy.orm import relationship
@@ -65,6 +66,7 @@ class PurchaseRequest(Base):
     bids = relationship("VendorBid", back_populates="purchase_request", cascade="all, delete-orphan")
     approval_workflows = relationship("ApprovalWorkflow", back_populates="purchase_request", cascade="all, delete-orphan")
     purchase_order = relationship("PurchaseOrder", back_populates="purchase_request", uselist=False)
+    compliance_check = relationship("ComplianceCheck", back_populates="purchase_request", uselist=False, cascade="all, delete-orphan")
 
 
 class VendorBid(Base):
@@ -129,3 +131,18 @@ class VendorPerformance(Base):
 
     # Relationships
     vendor = relationship("Vendor", back_populates="performances")
+
+
+class ComplianceCheck(Base):
+    __tablename__ = "compliance_checks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    pr_id = Column(Integer, ForeignKey("purchase_requests.id"), unique=True, nullable=False)
+    compliant = Column(Boolean, default=True, nullable=False)
+    violations_json = Column(Text, default="[]", nullable=False)  # Serialized list of {rule_name, explanation, severity}
+    required_action = Column(Text, default="", nullable=False)
+    checked_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    # Relationships
+    purchase_request = relationship("PurchaseRequest", back_populates="compliance_check")
+

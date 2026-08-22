@@ -150,6 +150,23 @@ class PurchaseOrderStatusUpdate(BaseModel):
     new_status: str = Field(..., pattern="^(Sent|Acknowledged|Delivered)$")
 
 
+# --- COMPLIANCE SCHEMAS ---
+class ViolationItem(BaseModel):
+    rule_name: str
+    explanation: str
+    severity: str = Field(default="Medium", pattern="^(Low|Medium|High)$")
+
+
+class ComplianceCheckOut(BaseModel):
+    id: int
+    pr_id: int
+    compliant: bool
+    violations: List[ViolationItem] = []
+    required_action: str = ""
+    checked_at: datetime.datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
 # --- PURCHASE REQUEST SCHEMAS ---
 class PurchaseRequestCreate(BaseModel):
     title: str
@@ -178,6 +195,7 @@ class PurchaseRequestOut(BaseModel):
     approval_status: Optional[str] = None
     po_number: Optional[str] = None
     winning_vendor: Optional[str] = None
+    compliance: Optional[ComplianceCheckOut] = None
     model_config = ConfigDict(from_attributes=True)
 
 
