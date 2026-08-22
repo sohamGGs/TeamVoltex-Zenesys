@@ -371,6 +371,34 @@ def seed_database():
         db.add(wf5)
         db.commit()
 
+        # Seed compliance checks for all PRs
+        import json
+        from app.compliance.compliance_service import evaluate_compliance
+        from app.compliance.ingest import init_policy_db
+
+        init_policy_db()
+        print("[INFO] Evaluating and seeding compliance checks for all PRs...")
+        for pr in [pr1, pr2, pr3, pr4, pr5]:
+            bids_cnt = db.query(models.VendorBid).filter(models.VendorBid.pr_id == pr.id).count()
+            comp_res = evaluate_compliance({
+                "id": pr.id,
+                "title": pr.title,
+                "item_description": pr.item_description,
+                "department": pr.department,
+                "estimated_budget": pr.estimated_budget,
+                "urgency": pr.urgency,
+                "quantity": pr.quantity,
+                "bids_count": bids_cnt
+            })
+            c_check = models.ComplianceCheck(
+                pr_id=pr.id,
+                compliant=bool(comp_res.get("compliant", True)),
+                violations_json=json.dumps(comp_res.get("violations", [])),
+                required_action=comp_res.get("required_action", "")
+            )
+            db.add(c_check)
+        db.commit()
+
         print("[SUCCESS] Database seeding completed successfully!")
 
     except Exception as e:
@@ -383,3 +411,4 @@ def seed_database():
 
 if __name__ == "__main__":
     seed_database()
+
