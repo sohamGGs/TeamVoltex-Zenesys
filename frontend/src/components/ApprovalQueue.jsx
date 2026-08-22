@@ -202,6 +202,25 @@ export default function ApprovalQueue({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    {/* Compliance Status Badge */}
+                    {wf.compliance && (
+                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                        wf.compliance.compliant
+                          ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                          : 'bg-rose-500/15 text-rose-300 border-rose-500/30 animate-pulse'
+                      }`}>
+                        {wf.compliance.compliant ? (
+                          <>
+                            <ShieldCheck className="w-3 h-3 text-emerald-400" /> Compliant
+                          </>
+                        ) : (
+                          <>
+                            <ShieldAlert className="w-3 h-3 text-rose-400" /> Policy Alert ({wf.compliance.violations?.length || 1})
+                          </>
+                        )}
+                      </span>
+                    )}
+
                     <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${ruleBadge.color}`}>
                       {ruleBadge.label}
                     </span>
@@ -228,6 +247,28 @@ export default function ApprovalQueue({
                         <DollarSign className="w-3.5 h-3.5 text-slate-500" /> Authorized Budget: <strong className="text-emerald-400 font-mono">${wf.estimated_budget.toLocaleString()}</strong>
                       </span>
                     </div>
+
+                    {/* Policy Compliance Warning Box if Non-Compliant */}
+                    {wf.compliance && !wf.compliance.compliant && (
+                      <div className="mt-2 p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/40 text-xs space-y-1.5">
+                        <div className="font-bold text-rose-300 flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                          RAG Policy Guard Alerts:
+                        </div>
+                        <div className="space-y-1 pl-4">
+                          {wf.compliance.violations?.map((v, idx) => (
+                            <div key={idx} className="text-[11px] text-slate-300">
+                              <strong className="text-rose-200">{v.rule_name} ({v.severity}):</strong> {v.explanation}
+                            </div>
+                          ))}
+                        </div>
+                        {wf.compliance.required_action && (
+                          <div className="text-[11px] text-blue-300 pt-0.5 border-t border-rose-500/20">
+                            <strong>Remediation:</strong> {wf.compliance.required_action}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {wf.comment && (
                       <div className="mt-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 flex items-start gap-2">
