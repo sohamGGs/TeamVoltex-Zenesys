@@ -1,0 +1,537 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Sparkles,
+  Award,
+  DollarSign,
+  Truck,
+  ShieldCheck,
+  History,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  FileCheck,
+  ChevronDown,
+  Check,
+  ArrowRight,
+  RefreshCw,
+  Cpu,
+  Info
+} from 'lucide-react';
+import { prAPI, vendorAPI, dashboardAPI, approvalsAPI } from '../api';
+
+export default function VendorComparison({
+  selectedPrId,
+  onSelectPr,
+  onNavigateToTab,
+  onPoGenerated
+}) {
+  const [prs, setPrs] = useState([]);
+  const [activePrId, setActivePrId] = useState(selectedPrId || null);
+  const [prDetail, setPrDetail] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [aiAudit, setAiAudit] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [generatingPo, setGeneratingPo] = useState(false);
+  const [error, setError] = useState('');
+  const [poSuccess, setPoSuccess] = useState(null);
+
+  // Load all PRs for the dropdown
+  useEffect(() => {
+    const fetchPrs = async () => {
+      try {
+        const data = await prAPI.getAll();
+        setPrs(data);
+        if (!activePrId && data.length > 0) {
+          setActivePrId(data[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to load PRs:', err);
+      }
+    };
+    fetchPrs();
+  }, []);
+
+  // When selectedPrId changes from parent
+  useEffect(() => {
+    if (selectedPrId) {
+      setActivePrId(selectedPrId);
+    }
+  }, [selectedPrId]);
+
+  // Load recommendations & PR detail when activePrId changes
+  useEffect(() => {
+    if (!activePrId) return;
+
+    const fetchPRData = async () => {
+      setLoading(true);
+      setError('');
+      setAiAudit(null);
+      setPoSuccess(null);
+
+      try {
+        const [detailData, recData] = await Promise.all([
+          prAPI.getById(activePrId),
+          vendorAPI.getRecommendations(activePrId),
+        ]);
+        setPrDetail(detailData);
+        setRecommendations(recData.recommendations || []);
+
+        // Automatically trigger AI audit
+        triggerAiAudit(activePrId);
+      } catch (err) {
+        console.error('Failed to fetch recommendations:', err);
+        setError('Failed to load vendor quotation data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPRData();
+  }, [activePrId]);
+
+  const triggerAiAudit = async (prIdToAudit) => {
+    const id = prIdToAudit || activePrId;
+    if (!id) return;
+    setAiLoading(true);
+    try {
+      const data = await dashboardAPI.runAIAnalysis(id);
+      setAiAudit(data);
+    } catch (err) {
+      console.error('AI audit error:', err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAuthorizePo = async (vendorId) => {
+    if (!activePrId) return;
+    setGeneratingPo(true);
+    try {
+      const res = await approvalsAPI.generatePO(
+        activePrId,
+        vendorId,
+        'Authorized via Vendor Comparison & Gemini AI Audit Matrix'
+      );
+      setPoSuccess(res.po);
+      if (onPoGenerated) onPoGenerated(res.po);
+
+      // Refresh PR detail
+      const refreshed = await prAPI.getById(activePrId);
+      setPrDetail(refreshed);
+    } catch (err) {
+      console.error('Failed to generate PO:', err);
+      setError(err.response?.data?.detail || 'Failed to authorize PO.');
+    } finally {
+      setGeneratingPo(false);
+    }
+  };
+
+  const getTierBadge = (tier) => {
+    switch (tier) {
+      case 'Enterprise Tier-1':
+        return 'bg-purple-500/15 text-purple-300 border-purple-500/30';
+      case 'Mid-Tier':
+        return 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+      default:
+        return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+    }
+  };
+
+  const getScoreColor = (score) => {
+    if (score >= 90) return 'text-emerald-400';
+    if (score >= 80) return 'text-blue-400';
+    if (score >= 70) return 'text-amber-400';
+    return 'text-rose-400';
+  };
+
+  return (
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Header & PR Selector */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2">
+            <Sparkles className="w-3.5 h-3.5" /> Multi-Vendor RFQ Scoring & AI Auditor
+          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+            Vendor Comparison &amp; AI Recommendation
+          </h1>
+          <p className="text-slate-400 text-xs md:text-sm mt-1">
+            Weighted composite scoring (Price 30, Delivery 25, Reliability 25, History 20) with Gemini 2.5 Flash executive insights.
+          </p>
+        </div>
+
+        {/* PR Selector Dropdown */}
+        <div className="flex items-center gap-3">
+          <label className="text-xs text-slate-400 font-medium whitespace-nowrap">Active PR:</label>
+          <div className="relative min-w-[260px]">
+            <select
+              value={activePrId || ''}
+              onChange={(e) => setActivePrId(Number(e.target.value))}
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-semibold text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+            >
+              {prs.map((p) => (
+                <option key={p.id} value={p.id}>
+                  PR-{p.id.toString().padStart(4, '0')} : {p.title.slice(0, 35)}...
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* PR Summary Bar */}
+      {prDetail && (
+        <div className="glass-card rounded-2xl p-5 border-slate-750 flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-sm font-bold text-blue-400">
+                PR-{prDetail.id.toString().padStart(4, '0')}
+              </span>
+              <span className="text-sm font-bold text-white">{prDetail.title}</span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                prDetail.urgency === 'Critical' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+              }`}>
+                {prDetail.urgency} Urgency
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 line-clamp-1">{prDetail.item_description}</p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-slate-400 text-[10px] block">Authorized Budget</span>
+              <span className="font-mono font-bold text-white">${prDetail.estimated_budget.toLocaleString()}</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-slate-400 text-[10px] block">Department</span>
+              <span className="font-bold text-slate-300">{prDetail.department}</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-slate-400 text-[10px] block">Quantity</span>
+              <span className="font-bold text-slate-300">{prDetail.quantity} Units</span>
+            </div>
+            <div className="px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800">
+              <span className="text-slate-400 text-[10px] block">PR Status</span>
+              <span className="font-bold text-emerald-400">{prDetail.status}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PO Generated Success Alert */}
+      {poSuccess && (
+        <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-emerald-300 flex items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div>
+              <strong className="text-white text-sm">Purchase Order {poSuccess.po_number} Authorized!</strong>
+              <div className="text-emerald-300/90 mt-0.5">
+                ReportLab PDF generated and saved to ERP repository. Status: Sent.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigateToTab('purchase_orders')}
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            Open in PO Register <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* AI Executive Auditor Panel */}
+      <div className="glass-card rounded-2xl p-6 border-blue-500/30 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-blue-950/20 space-y-5 shadow-glow-blue/10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-white">Gemini 2.5 Flash Strategic Procurement Audit</h2>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  aiAudit?.is_live_gemini
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                }`}>
+                  {aiAudit?.is_live_gemini ? 'Gemini 2.5 Live' : 'Autonomous AI Auditor'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">Deep structural trade-off analysis across cost, lead time, reliability, and supplier risk</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => triggerAiAudit()}
+            disabled={aiLoading}
+            className="px-3.5 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer self-start sm:self-auto"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${aiLoading ? 'animate-spin' : ''}`} />
+            {aiLoading ? 'Auditing Bids...' : 'Re-Run AI Audit'}
+          </button>
+        </div>
+
+        {aiLoading ? (
+          <div className="py-8 text-center space-y-3">
+            <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto" />
+            <p className="text-xs text-slate-400">Gemini 2.5 Flash is analyzing quotation variances and historical reliability...</p>
+          </div>
+        ) : aiAudit ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left AI Column: Recommended Winner & Confidence */}
+            <div className="lg:col-span-5 p-4 rounded-xl bg-slate-900/80 border border-slate-750 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recommended Award</span>
+                <span className="text-xs font-extrabold text-emerald-400 font-mono">
+                  {aiAudit.confidence_score}% Confidence
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-lg font-extrabold text-white flex items-center gap-2">
+                  <Award className="w-5 h-5 text-amber-400" />
+                  {aiAudit.selected_vendor_name}
+                </div>
+                <div className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  Est. Net Savings: ${aiAudit.net_savings_estimate.toLocaleString()}
+                </div>
+              </div>
+
+              {/* Confidence Progress Bar */}
+              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${aiAudit.confidence_score}%` }}
+                />
+              </div>
+
+              {/* Executive Summary */}
+              <div className="p-3 rounded-lg bg-slate-800/60 border border-slate-700/60 text-xs text-slate-300 leading-relaxed italic">
+                "{aiAudit.executive_summary}"
+              </div>
+            </div>
+
+            {/* Right AI Column: Key Advantages & Risk Matrix */}
+            <div className="lg:col-span-7 space-y-4">
+              {/* Key Advantages */}
+              <div className="space-y-2">
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-emerald-400" /> Key Strategic Advantages
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {aiAudit.key_advantages?.map((adv, i) => (
+                    <div key={i} className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 mt-1.5" />
+                      <span>{adv}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Risk Assessment */}
+              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-750 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Risk Level
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] uppercase border ${
+                    aiAudit.risk_assessment?.risk_level === 'High'
+                      ? 'bg-rose-500/20 text-rose-400 border-rose-500/30'
+                      : aiAudit.risk_assessment?.risk_level === 'Moderate'
+                      ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                      : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                  }`}>
+                    {aiAudit.risk_assessment?.risk_level || 'Low'} Risk
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  <strong className="text-slate-300">Mitigation:</strong> {aiAudit.risk_assessment?.mitigation_advice}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Vendor Scoring Algorithm Formula Explainer Bar */}
+      <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+        <div className="flex items-center gap-2">
+          <Info className="w-4 h-4 text-blue-400" />
+          <span>
+            <strong className="text-white">ProcureIQ Scoring Model:</strong> Total (100) = Price (30 max) + Delivery (25 max) + Reliability (25 max) + History (20 max)
+          </span>
+        </div>
+        <span className="text-[11px] text-slate-500 font-mono">
+          History Score = mean(delivery, order_accuracy, quality)
+        </span>
+      </div>
+
+      {/* Vendor Bids Matrix Table */}
+      <div className="glass-card rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-700/60 pb-4">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Award className="w-5 h-5 text-blue-400" /> Supplier Quotation Ranking Matrix
+            </h3>
+            <p className="text-xs text-slate-400">
+              Ranked comparison of all 8 active vendor submissions for this purchase request
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-300">
+            {recommendations.length} Bids Evaluated
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-700/80 text-slate-400 uppercase text-[10px] tracking-wider bg-slate-900/40">
+                <th className="py-3 px-3">Rank</th>
+                <th className="py-3 px-3">Supplier & Tier</th>
+                <th className="py-3 px-3 font-mono text-right">Quoted Price</th>
+                <th className="py-3 px-3 text-right">Variance</th>
+                <th className="py-3 px-3 text-center">Delivery SLA</th>
+                <th className="py-3 px-3 text-center">Reliability</th>
+                <th className="py-3 px-3 text-center">History</th>
+                <th className="py-3 px-3 text-center font-mono">Price (30)</th>
+                <th className="py-3 px-3 text-center font-mono">Del (25)</th>
+                <th className="py-3 px-3 text-center font-mono">Rel (25)</th>
+                <th className="py-3 px-3 text-center font-mono">Hist (20)</th>
+                <th className="py-3 px-3 text-center font-mono font-bold text-white">Total (100)</th>
+                <th className="py-3 px-3 text-right">Fast-Track</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {recommendations.map((rec) => {
+                const isWinner = rec.rank === 1;
+                const isSelectedByAi = aiAudit?.selected_vendor_name === rec.vendor_name;
+
+                return (
+                  <tr
+                    key={rec.bid_id}
+                    className={`transition-colors ${
+                      isWinner
+                        ? 'bg-blue-950/25 hover:bg-blue-950/40'
+                        : 'hover:bg-slate-800/40'
+                    }`}
+                  >
+                    {/* Rank */}
+                    <td className="py-3.5 px-3 font-bold">
+                      {rec.rank === 1 ? (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] flex items-center gap-1 w-max">
+                          <Award className="w-3 h-3" /> #1 Best
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-mono">#{rec.rank}</span>
+                      )}
+                    </td>
+
+                    {/* Supplier & Tier */}
+                    <td className="py-3.5 px-3">
+                      <div className="font-semibold text-white flex items-center gap-1.5">
+                        {rec.vendor_name}
+                        {isSelectedByAi && (
+                          <span className="text-[9px] bg-blue-500/20 text-blue-300 px-1.5 py-0.2 rounded border border-blue-500/30">
+                            AI Pick
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`text-[9px] px-1.5 py-0.2 rounded border font-medium ${getTierBadge(rec.pricing_tier)}`}>
+                          {rec.pricing_tier}
+                        </span>
+                        <span className="text-[10px] text-slate-400">{rec.contact_email}</span>
+                      </div>
+                    </td>
+
+                    {/* Quoted Price */}
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-white">
+                      ${rec.quoted_price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </td>
+
+                    {/* Variance vs Budget */}
+                    <td className="py-3.5 px-3 text-right font-mono text-[11px]">
+                      <span className={rec.scores.price_variance_pct <= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                        {rec.scores.price_variance_pct <= 0 ? '' : '+'}
+                        {rec.scores.price_variance_pct}%
+                      </span>
+                    </td>
+
+                    {/* Delivery Days */}
+                    <td className="py-3.5 px-3 text-center">
+                      <span className="font-semibold text-slate-200">{rec.delivery_days} days</span>
+                      <span className="text-[10px] text-slate-400 block">(avg: {rec.avg_delivery_days})</span>
+                    </td>
+
+                    {/* Reliability */}
+                    <td className="py-3.5 px-3 text-center">
+                      <span className="font-semibold text-slate-200">{rec.reliability_score}%</span>
+                    </td>
+
+                    {/* History */}
+                    <td className="py-3.5 px-3 text-center">
+                      <span className="font-semibold text-slate-200">{rec.history_score_raw}%</span>
+                    </td>
+
+                    {/* Price Score (30) */}
+                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                      {rec.scores.price_score.toFixed(1)}
+                    </td>
+
+                    {/* Delivery Score (25) */}
+                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                      {rec.scores.delivery_score.toFixed(1)}
+                    </td>
+
+                    {/* Reliability Score (25) */}
+                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                      {rec.scores.reliability_score.toFixed(1)}
+                    </td>
+
+                    {/* History Score (20) */}
+                    <td className="py-3.5 px-3 text-center font-mono text-slate-300">
+                      {rec.scores.history_score.toFixed(1)}
+                    </td>
+
+                    {/* Total Composite Score (100) */}
+                    <td className="py-3.5 px-3 text-center font-mono font-extrabold text-sm">
+                      <span className={getScoreColor(rec.scores.total_score)}>
+                        {rec.scores.total_score.toFixed(1)}
+                      </span>
+                    </td>
+
+                    {/* Action Button */}
+                    <td className="py-3.5 px-3 text-right">
+                      {prDetail?.purchase_order ? (
+                        <span className="text-[10px] text-emerald-400 font-semibold px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20">
+                          PO Issued
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={generatingPo}
+                          onClick={() => handleAuthorizePo(rec.vendor_id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ml-auto ${
+                            isWinner
+                              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20'
+                              : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+                          }`}
+                        >
+                          <FileCheck className="w-3.5 h-3.5" />
+                          <span>Award &amp; PO</span>
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
