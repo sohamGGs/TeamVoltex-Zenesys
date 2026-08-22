@@ -17,6 +17,34 @@ from app.routers.purchase_requests import auto_generate_rfq_bids
 def seed_database():
     print("[INFO] Initializing database schema...")
     Base.metadata.create_all(bind=engine)
+
+    # Ensure SQLite columns exist
+    try:
+        with engine.connect() as conn:
+            from sqlalchemy import text
+            res_v = conn.execute(text("PRAGMA table_info(vendors);")).fetchall()
+            cols_v = [r[1] for r in res_v]
+            if "is_local_vendor" not in cols_v:
+                conn.execute(text("ALTER TABLE vendors ADD COLUMN is_local_vendor BOOLEAN DEFAULT 0;"))
+            if "is_incubator" not in cols_v:
+                conn.execute(text("ALTER TABLE vendors ADD COLUMN is_incubator BOOLEAN DEFAULT 0;"))
+            if "local_proximity_km" not in cols_v:
+                conn.execute(text("ALTER TABLE vendors ADD COLUMN local_proximity_km FLOAT DEFAULT 15.0;"))
+
+            res_po = conn.execute(text("PRAGMA table_info(purchase_orders);")).fetchall()
+            cols_po = [r[1] for r in res_po]
+            if "netsuite_internal_id" not in cols_po:
+                conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_internal_id VARCHAR(50) DEFAULT 'NS-REC-10482';"))
+            if "netsuite_sync_status" not in cols_po:
+                conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_sync_status VARCHAR(50) DEFAULT 'Synced (SuiteTalk REST)';"))
+            if "netsuite_subsidiary" not in cols_po:
+                conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_subsidiary VARCHAR(100) DEFAULT 'TechCorp Americas (Sub 01)';"))
+            if "netsuite_gl_account" not in cols_po:
+                conn.execute(text("ALTER TABLE purchase_orders ADD COLUMN netsuite_gl_account VARCHAR(100) DEFAULT '6010 - Direct Sourcing & Material CapEx';"))
+            conn.commit()
+    except Exception as e:
+        pass
+
     db: Session = SessionLocal()
 
     try:
@@ -25,6 +53,7 @@ def seed_database():
             print("[INFO] Database already contains data. Clearing old records for a fresh seed...")
             db.query(models.PurchaseOrder).delete()
             db.query(models.ApprovalWorkflow).delete()
+            db.query(models.ComplianceCheck).delete()
             db.query(models.VendorBid).delete()
             db.query(models.PurchaseRequest).delete()
             db.query(models.VendorPerformance).delete()
@@ -37,35 +66,35 @@ def seed_database():
             models.User(
                 email="admin@procureiq.internal",
                 password_hash=auth.get_password_hash("admin123"),
-                full_name="Elena Vance",
+                full_name="Priya Sharma",
                 role="Lead Procurement Officer",
                 department="Supply Chain"
             ),
             models.User(
                 email="planthead@procureiq.internal",
                 password_hash=auth.get_password_hash("plant123"),
-                full_name="Marcus Sterling",
+                full_name="Rajesh Verma",
                 role="Plant Head",
                 department="Operations"
             ),
             models.User(
                 email="vpops@procureiq.internal",
                 password_hash=auth.get_password_hash("vp123"),
-                full_name="Victoria Zhao",
+                full_name="Kavita Reddy",
                 role="VP Operations",
                 department="Operations"
             ),
             models.User(
                 email="finance@procureiq.internal",
                 password_hash=auth.get_password_hash("finance123"),
-                full_name="Arthur Pendelton",
+                full_name="Arjun Patel",
                 role="Finance Director",
                 department="Finance"
             ),
             models.User(
                 email="deptmgr@procureiq.internal",
                 password_hash=auth.get_password_hash("dept123"),
-                full_name="David Kross",
+                full_name="Rohan Mehta",
                 role="Department Manager",
                 department="Engineering"
             )
@@ -157,6 +186,19 @@ def seed_database():
                 pricing_tier="Economy Tier",
                 specialties="Standard Tooling, Bulk PPE, Basic Consumables",
                 status="Active"
+            ),
+            models.Vendor(
+                name="Metro Local Precision & Fab (Local SMB)",
+                contact_email="bids@metrolocal.io",
+                phone="+1 (800) 555-0188",
+                avg_delivery_days=2,
+                reliability_score=85.0,
+                pricing_tier="Economy Tier",
+                specialties="Local Precision CNC Stamping, Same-Day Emergency Prototyping & Nearshore Fab",
+                status="Active",
+                is_local_vendor=True,
+                is_incubator=True,
+                local_proximity_km=8.5
             )
         ]
         db.add_all(vendors)
@@ -167,6 +209,9 @@ def seed_database():
         print("[INFO] Seeding Vendor Performance History (delivery_time, order_accuracy, quality)...")
         performances = []
         for v in vendor_records:
+            if getattr(v, "is_incubator", False):
+                # New Local Supplier: Zero legacy ERP transactions. Evaluated via Bayesian Cold-Start Prior & ESG bonus
+                continue
             base_rel = v.reliability_score
             # Add delivery_time metric
             performances.append(models.VendorPerformance(

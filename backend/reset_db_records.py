@@ -48,7 +48,7 @@ def reset_records():
         perf_count = db.query(models.VendorPerformance).count()
 
         print("\n[PRESERVED CORE SETUP]")
-        print(f"  - User Personas:     {user_count} Active (Elena, Marcus, Victoria, Arthur, David)")
+        print(f"  - User Personas:     {user_count} Active (Priya, Rajesh, Kavita, Arjun, Rohan)")
         print(f"  - Qualified Vendors: {vendor_count} Active (Apex, Nexus, Titan, Vanguard, etc.)")
         print(f"  - Historical Metrics:{perf_count} Records")
         print("\n" + "=" * 55)
